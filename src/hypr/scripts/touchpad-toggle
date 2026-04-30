@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+source $XDG_CONFIG_HOME/hypr/scripts/toggles-api.sh touchpad on \
+    'hyprctl keyword "device[focaltechps/2-focaltech-touchpad]:enabled" true' \
+    'hyprctl keyword "device[focaltechps/2-focaltech-touchpad]:enabled" false'
+pkill -RTMIN+3 waybar
