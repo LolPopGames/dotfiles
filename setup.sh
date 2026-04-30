@@ -66,14 +66,25 @@ echo "OS_NAME=$OS_NAME" >> "$CONFIG"
 confs=()
 deps=()
 function check-for-config() {
-    while true; do
-        echo -en "Install config for \033[92m$1\033[0m? [Y/n] "
-        read responce
-        case "$responce" in
-            [Yy]|'') confs+=("$1") deps+=("$1"); return 0;;
-            [Nn])                                return 1;;
-        esac
-    done
+    if command -v "$1" >/dev/null 2>&1; then
+        while true; do
+            echo -en "Install config for \033[92m$1\033[0m? [Y/n] "
+            read responce
+            case "$responce" in
+                [Yy]|'') confs+=("$1") deps+=("$1"); return 0;;
+                [Nn])                                return 1;;
+            esac
+        done
+    else
+        while true; do
+            echo -en "Install config for \033[91m$1\033[0m? [y/N] "
+            read responce
+            case "$responce" in
+                [Nn]|'')                          return 1;;
+                [Yy]) confs+=("$1") deps+=("$1"); return 0;;
+            esac
+        done
+    fi
 }
 
 check-for-config kitty
@@ -84,6 +95,7 @@ check-for-config mako
 check-for-config waybar
 check-for-config cava
 check-for-config mintty
+check-for-config gdb
 
 echo "CONFS=(${confs[@]})" >> "$CONFIG"
 echo "DEPS=(${deps[@]})"   >> "$CONFIG"

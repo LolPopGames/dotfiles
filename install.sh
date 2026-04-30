@@ -44,7 +44,8 @@ cp "$DIR"/src/*.sh "$CONFIG_HOME/dotfiles"
 
 for conf in ${CONFS[@]}; do
     case "$conf" in
-        mako|waybar|hyprland) cp -r "$DIR/src/$conf" "$CONFIG_HOME" ;;
+        mako|waybar|gdb|kitty|cava|vim) cp -r "$DIR/src/$conf" "$CONFIG_HOME";;
+        hyprland) cp -r "$DIR/src/hypr" "$CONFIG_HOME";;
         zsh) cp -r "$DIR/src/$conf" "$CONFIG_HOME/dotfiles/src";;
     esac
 done
