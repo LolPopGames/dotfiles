@@ -7,7 +7,7 @@ case "$1" in
         echo -e "Install dependencies for \033[96mLolPopGames'\033[0m dotfiles"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-c CONFIG\033[0m  install deps with custom config filename instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-c CONFIG\033[0m  Install deps with custom config filename instead of \033[92mconfig.sh\033[0m"
 
         exit 0
         ;;
@@ -27,11 +27,12 @@ else
     SETUP="$(dirname "$0" | tr -d $'\n')/setup.sh"
     echo     "$CONFIG: File not found" >&2
     echo -en "Generate \033[92m$CONFIG\033[0m with \033[92m$SETUP"
-    if [ "$CONFIG" != 'config.sh' ]; then
+    if [ "$CONFIG" != './config.sh' ]; then
         echo -e " -o $CONFIG\033[0m"
     else
         echo -e "\033[0m"
     fi
+    exit 1
 fi
 
 case "$OS_NAME" in
