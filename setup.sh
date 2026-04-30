@@ -87,3 +87,13 @@ check-for-config mintty
 
 echo "CONFS=(${confs[@]})" >> "$CONFIG"
 echo "DEPS=(${deps[@]})"   >> "$CONFIG"
+
+echo -n 'Dependencies:'
+for dep in ${deps[@]}; do
+    if command -v "$dep" >/dev/null 2>&1; then
+        echo -en " \033[32m$dep\033[0m"
+    else
+        echo -en " \033[31m$dep\033[0m"
+    fi
+done
+echo

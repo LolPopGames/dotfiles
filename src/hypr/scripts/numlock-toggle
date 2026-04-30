@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+source $XDG_CONFIG_HOME/hypr/scripts/toggles-api.sh numlock off \
+    'pkill -RTMIN+3 waybar' \
+    'pkill -RTMIN+3 waybar'

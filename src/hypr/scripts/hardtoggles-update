@@ -1,0 +1,17 @@
+#!/bin/sh
+
+read -r CURRENT_NUMLOCK  < /sys/class/leds/input4::numlock/brightness
+read -r CURRENT_CAPSLOCK < /sys/class/leds/input4::capslock/brightness
+
+if [ $CURRENT_NUMLOCK -eq 1 ]; then
+    touch $XDG_RUNTIME_DIR/hypr-scripts/numlock-on
+else
+    rm $XDG_RUNTIME_DIR/hypr-scripts/numlock-on
+fi
+if [ $CURRENT_CAPSLOCK -eq 1 ]; then
+    touch $XDG_RUNTIME_DIR/hypr-scripts/capslock-on
+else
+    rm $XDG_RUNTIME_DIR/hypr-scripts/capslock-on
+fi
+
+pkill -RTMIN+3 waybar
