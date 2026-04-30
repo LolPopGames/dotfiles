@@ -1,16 +1,16 @@
 #!/usr/bin/env zsh
-# vim:foldmethod=syntax
+# vim: set foldmethod=syntax:
 set -e
 
 # Custom Config Directory
-[[ -z "$ZSH_CUSTOM" ]] && ZSH_CUSTOM="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
-SRC="$ZSH_CUSTOM/src"
+SRC="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/zsh/src"
 
 # Output File
-OUTPUT="$HOME/.zshrc"
+OUTPUT="${ZDOTDIR:-$HOME}/.zshrc"
+mkdir -p "${ZDOTDIR:-$HOME}"
 
 # Loading Config
-source "$ZSH_CUSTOM/build-config.zsh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/zsh/config.zsh"
 
 # Getting OS color and logo
 OS="$(uname -o)"
@@ -280,3 +280,4 @@ fi
 } > "$OUTPUT"
 
 zcompile "$OUTPUT"
+[[ -n "$ZDOTDIR" ]] && ln -s "$ZDOTDIR"/{.zshrc,zshrc}
