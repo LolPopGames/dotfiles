@@ -1,0 +1,17 @@
+if   [[ "$PWD" == ~ ]]; then dir_icon='' 
+elif [[ "$PWD" == ~/Code ]]; then dir_icon='' 
+elif [[ "$PWD" == ~/Music ]]; then dir_icon='' 
+elif [[ "$PWD" == ~/Documents ]]; then dir_icon='󰈙' 
+elif [[ "$PWD" == ~/Downloads ]]; then dir_icon='󰜮' 
+elif [[ "$PWD" == ~/Desktop ]]; then dir_icon='󰇄' 
+elif [[ "$PWD" == ~/Pictures ]]; then dir_icon='' 
+elif [[ "$PWD" == ~/Videos ]]; then dir_icon='' 
+elif [[ "$PWD" == ~/.config ]]; then dir_icon=''
+elif [[ "$PWD" == / ]]; then dir_icon='󱛟' 
+elif [[ "$PWD" == /usr ]]; then dir_icon='' 
+elif [[ ! -w "$PWD" ]]; then dir_icon='󰌾' 
+elif [[ $PWD:t == .* ]]; then dir_icon='󱞞' 
+elif test ! $PWD/*(NDY1); then dir_icon='󰷏' 
+else dir_icon='󰝰'
+fi
+

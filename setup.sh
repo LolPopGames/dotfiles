@@ -7,7 +7,7 @@ case "$1" in
         echo -e "Generate configuration for \033[96mLolPopGames'\033[0m dotfiles"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-o OUTPUT\033[0m  generate a config with custom filename instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-o OUTPUT\033[0m  Generate a config with custom filename instead of \033[92mconfig.sh\033[0m"
 
         exit 0
         ;;
