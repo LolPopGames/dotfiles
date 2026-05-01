@@ -60,9 +60,9 @@ mkdir -p "$DOT"
 
 not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$DOT/config.sh" 
 not-same-link "$DIR"    "$REPO"          && mv "$DIR"    "$REPO"
-
-sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$DOT/config.sh"
 link-it "$REPO/config.sh" "$DOT/config.sh"
+
+sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$REPO/config.sh"
 
 for script in "$REPO"/src/*.sh; do
     script_basename="$(basename "$script")"
