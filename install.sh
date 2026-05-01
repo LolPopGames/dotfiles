@@ -40,13 +40,41 @@ else
     CONFIG_HOME="$HOME/.config"
 fi
 
-mkdir -p "$CONFIG_HOME/dotfiles/src"
-cp "$DIR"/src/*.sh "$CONFIG_HOME/dotfiles"
+link-it() {
+    if [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]; then
+        rm -rf "$1"
+        ln -s "$2" "$1"
+        return 0
+    fi
+    return 1
+}
+
+DOT="$CONFIG_HOME/dotfiles"
+REPO="$DOT/repo"
+
+mkdir -p "$DOT"
+
+cp "$CONFIG" "$DOT/config.sh" 
+sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$DOT/config.sh"
+
+mv "$DIR" "$REPO"
+link-it "$REPO/config.sh" "$DOT/config.sh"
+
+for script in "$REPO"/src/*.sh; do
+    script_basename="$(basename "$script")"
+    rm -rf "$DOT/$script_basename"
+    ln -f -s "$script" "$DOT/$script_basename"
+done
 
 for conf in ${CONFS[@]}; do
     case "$conf" in
-        mako|waybar|gdb|kitty|cava|vim) cp -r "$DIR/src/$conf" "$CONFIG_HOME";;
-        hyprland) cp -r "$DIR/src/hypr" "$CONFIG_HOME";;
-        zsh) cp -r "$DIR/src/$conf" "$CONFIG_HOME/dotfiles";;
+        mako|waybar|gdb|kitty|cava|vim) link-it "$CONFIG_HOME/$conf" "$REPO/src/$conf";;
+        hyprland)
+            link-it "$CONFIG_HOME/hypr" "$REPO/src/hypr" && hyprctl reload
+            link-it "$CONFIG_HOME/uwsm" "$REPO/src/uwsm"
+            ;;
+        zsh) link-it "$DOT/$conf" "$REPO/src/$conf";;
     esac
 done
+
+exit 0
