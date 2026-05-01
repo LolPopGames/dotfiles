@@ -80,6 +80,11 @@ case "$1" in
         fi
         ;;
 
+    '')
+        cd "$CONFIG_HOME/dotfiles" || exit $?
+        exec $SHELL --login
+        ;;
+
     *)
         cd "$CONFIG_HOME/dotfiles/$1/src" || exit $?
         exec $SHELL --login
