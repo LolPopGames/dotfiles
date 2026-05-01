@@ -41,7 +41,7 @@ else
 fi
 
 not-same-link() {
-    [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]
+    [ "$(readlink -e "$1")" != "$(readlink -e "$2")" ]
 }
 
 link-it() {
