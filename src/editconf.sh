@@ -81,7 +81,7 @@ case "$1" in
         ;;
 
     *)
-        cd "$CONFIG_HOME/dotfiles/$1" || exit $?
+        cd "$CONFIG_HOME/dotfiles/$1/src" || exit $?
         exec $SHELL --login
         ;;
 esac
