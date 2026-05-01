@@ -280,4 +280,4 @@ fi
 } > "$OUTPUT"
 
 zcompile "$OUTPUT"
-[[ -n "$ZDOTDIR" ]] && ln -s "$ZDOTDIR"/{.zshrc,zshrc}
+[[ -n "$ZDOTDIR" ]] && ln -f -s "$ZDOTDIR"/{.zshrc,zshrc}
