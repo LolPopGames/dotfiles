@@ -58,7 +58,10 @@ REPO="$DOT/repo"
 
 mkdir -p "$DOT"
 
-not-same-link "$DIR"    "$REPO"          && mv "$DIR"    "$REPO"
+if not-same-link "$DIR" "$REPO"; then
+    mv "$DIR" "$REPO"
+    ln -s "$REPO" "$DIR"
+fi
 not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$REPO/config.sh" 
 link-it "$DOT/config.sh" "$REPO/config.sh"
 
