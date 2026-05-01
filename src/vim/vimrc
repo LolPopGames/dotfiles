@@ -308,15 +308,6 @@ Plug 'vim-airline/vim-airline-themes'
 " Brainfuck {{{
 Plug 'fruit-in/brainfuck-vim'
 " }}}
-" C/C++ {{{
-" Syntax Highlighting (LSP + clangd) {{{
-"Plug 'prabirshrestha/vim-lsp'
-"Plug 'mattn/vim-lsp-settings'
-" }}}
-" Autocomplete {{{
-"Plug 'ycm-core/YouCompleteMe'
-" }}}
-" }}}
 " Doxygen {{{
 Plug 'vim-scripts/DoxygenToolkit.vim'
 " }}}

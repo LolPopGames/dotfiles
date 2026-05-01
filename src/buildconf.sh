@@ -8,17 +8,19 @@ fi
 
 case "$1" in
     -h|--help)
-        echo -e "Usage: \033[92mbuildconf\033[0m \033[94m[-c CONFIG]\033[0m program"
+        echo -e "Usage: \033[92mbuildconf\033[0m \033[94m[-c CONFIG]\033[0m \033[1mprogram\033[0m"
         echo -e "Build a complex config for a program"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-c CONFIG\033[0m  Build a complex config using custom config filename"
-        echo -e                "               instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
         echo
         echo "List configs:"
         for dir in "$CONFIG_HOME/dotfiles/"*; do
-            [ -d "$dir" ] || continue
-            echo "    $(basename "$dir")"
+            base="$(basename "$dir")"
+            if [ ! -d "$dir" ] || [ "$base" = 'repo' ]; then
+                continue
+            fi
+            echo "    $base"
         done
 
         exit 0

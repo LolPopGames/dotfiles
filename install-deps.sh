@@ -5,7 +5,7 @@ display-help() {
     echo -e "Install dependencies for \033[96mLolPopGames'\033[0m dotfiles"
     echo
     echo    "Options:"
-    echo -e "    \033[94m-c CONFIG\033[0m  Install deps with custom config filename instead of \033[92mconfig.sh\033[0m"
+    echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
     echo -e "    \033[94m-y\033[0m         Fetch (refresh/update) package databases"
     echo -e "    \033[94m-u\033[0m         Upgrade packages"
 

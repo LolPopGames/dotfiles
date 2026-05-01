@@ -12,13 +12,15 @@ case "$1" in
         echo -e "Configure building of a complex program config"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-c CONFIG\033[0m  Configure a complex config using custom config filename"
-        echo -e                "               instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
         echo
         echo "List configs:"
         for dir in "$CONFIG_HOME/dotfiles/"*; do
-            [ -d "$dir" ] || continue
-            echo "    $(basename "$dir")"
+            base="$(basename "$dir")"
+            if [ ! -d "$dir" ] || [ "$base" = 'repo' ]; then
+                continue
+            fi
+            echo "    $base"
         done
 
         exit 0
