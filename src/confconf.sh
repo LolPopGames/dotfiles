@@ -12,7 +12,7 @@ case "$1" in
         echo -e "Configure building of a complex program config"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-c CONFIG\033[0m\tCustom config filename instead of \033[92mconfig.sh\033[0m"
         echo
         echo "List configs:"
         for dir in "$CONFIG_HOME/dotfiles/"*; do
@@ -34,7 +34,7 @@ case "$1" in
         shift
         shift
         ;;
-    *)  CONFIG="$(dirname "$0")/config.sh";;
+    *) CONFIG="$CONFIG_HOME/dotfiles/config.sh";;
 esac
 
 if [ -f "$CONFIG" ]; then
@@ -52,17 +52,17 @@ else
 fi
 
 if [ -n "$VISUAL" ]; then
-    exec "$VISUAL" "$1"
+    exec "$VISUAL" "$CONFIG_HOME/dotfiles/$1/config.sh"
 elif [ -n "$EDITOR" ]; then
-    exec "$EDITOR" "$1"
+    exec "$EDITOR" "$CONFIG_HOME/dotfiles/$1/config.sh"
 elif command -v vim >/dev/null 2>&1; then
-    exec vim "$1"
+    exec vim "$CONFIG_HOME/dotfiles/$1/config.sh"
 elif command -v vi >/dev/null 2>&1; then
-    exec vi "$1"
+    exec vi "$CONFIG_HOME/dotfiles/$1/config.sh"
 elif command -v nano >/dev/null 2>&1; then
-    exec nano "$1"
+    exec nano "$CONFIG_HOME/dotfiles/$1/config.sh"
 elif command -v ed >/dev/null 2>&1; then
-    exec ed "$1"
+    exec ed "$CONFIG_HOME/dotfiles/$1/config.sh"
 else
     echo "$0: Failed to found any editor" 2>&1
     exit 1

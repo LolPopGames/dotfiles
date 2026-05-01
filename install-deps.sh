@@ -1,30 +1,37 @@
 #!/usr/bin/env sh
 
+# --- Help Function --- 
+# It also will automatically exit program
 display-help() {
     echo -e "Usage: \033[92m$0\033[0m \033[94m[-c CONFIG]\033[0m"
     echo -e "Install dependencies for \033[96mLolPopGames'\033[0m dotfiles"
     echo
     echo    "Options:"
-    echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
+    echo -e "    \033[94m-c CONFIG\033[0m\tCustom config filename instead of \033[92mconfig.sh\033[0m"
     echo -e "    \033[94m-y\033[0m         Fetch (refresh/update) package databases"
     echo -e "    \033[94m-u\033[0m         Upgrade packages"
 
     exit 0
 }
 
+# --- Parsing Arguments ---
 FETCH=0
 UPGRADE=0
+CONFIG="$(realpath $(dirname "$0"))/config.sh"
 while [ "$#" -gt 0 ]; do
+    # If --help
     [ "$1" = "--help" ] && display-help
 
+    # If first character of arguments is '-' (flag)
     if [ "$(echo "$1" | cut -c1)" = '-' ]; then
+        # --- Parsing every letter ---
         plen=$(( $(echo "$1" | wc -c) -1 ))
         i=2
         while [ "$i" -le "$plen" ]; do
-            c=$(echo "$1" | cut -c"$i")
-            case "$c" in
-                h) display-help;;
-                c)
+            char=$(echo "$1" | cut -c"$i")
+            case "$char" in
+                h) display-help;; # -h (--help)
+                c)                # -c
                     if [ "$(expr "$2" : '\(.\)')" = '/' ]; then
                         CONFIG="$2"
                     else
@@ -32,17 +39,16 @@ while [ "$#" -gt 0 ]; do
                     fi
                     shift
                     ;;
-                y) FETCH=1;;
-                u) UPGRADE=1;;
-                *) CONFIG="./config.sh";;
+                y) FETCH=1;;   # -y
+                u) UPGRADE=1;; # -u
             esac
             i=$((i+1))
         done
     fi
     shift
 done
-[ -z "$CONFIG" ] && CONFIG="./config.sh"
 
+# --- Loading Config ---
 if [ -f "$CONFIG" ]; then
     . "$CONFIG"
 else
@@ -57,6 +63,7 @@ else
     exit 1
 fi
 
+# --- Determining Which Dependencies to install ---
 deps_to_install=()
 for dep in ${DEPS[@]}; do
     if ! command -v "$dep" >/dev/null 2>&1; then
@@ -64,11 +71,13 @@ for dep in ${DEPS[@]}; do
     fi
 done
 
+# --- Installing Dependencies ---
+# Checking if where is any deps to install
 if [ "${#deps_to_install[@]}" -gt 0 ]; then
     case "$OS_NAME" in
-        linux-*)
+        linux-*) # --- Linux ---
             case "$OS_NAME $LINUX_ID_LIKE" in
-                *arch*)
+                *arch*) # --- Arch Linux ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo pacman -Syu --color=auto --needed ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -80,7 +89,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *debian*|*ubuntu*|*pclinuxos*)
+                *debian*|*ubuntu*|*pclinuxos*) # --- Ubuntu/Debian ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo apt update && sudo apt upgrade -y && sudo apt install ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -92,7 +101,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *rhel*|*fedora*)
+                *rhel*|*fedora*) # --- Fedora ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo dnf upgrade && sudo dnf install ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -104,7 +113,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *opensuse*|*sles*)
+                *opensuse*|*sles*) # --- OpenSUSE ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo zypper refresh && sudo zypper upgrade && sudo zypper install ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -116,7 +125,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *gentoo*)
+                *gentoo*) # --- Gentoo ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo emerge --sync && sudo emerge -uDN @world && sudo emerge -a ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -128,7 +137,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *alpine*)
+                *alpine*) # --- Alpine ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo apk update && sudo apk upgrade && sudo apk add ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -140,7 +149,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *clear-linux-os*)
+                *clear-linux-os*) # --- Clear Linux OS ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo swupd update && sudo swupd update && sudo swupd bundle-add ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ] || [ $UPGRADE -eq 1 ]; then
@@ -150,7 +159,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *solus*)
+                *solus*) # --- Solus ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo eopkg update-repo && sudo eopkg upgrade && sudo eopkg install ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -162,7 +171,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *void*)
+                *void*) # --- Void Linux ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo xbps-install -S && sudo xbps-install -Su && sudo xbps-install ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -174,7 +183,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *nixos*)
+                *nixos*) # --- Nix ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo nix-channel --update && sudo nix-env -u && \
                             (IFS=' nixos.'; sudo nix-env -iA "${deps_to_install[*]}") || exit $?
@@ -187,7 +196,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
                     fi
                     ;;
 
-                *guix*)
+                *guix*) # --- Guix ---
                     if [ $FETCH -eq 1 ] && [ $UPGRADE -eq 1 ]; then
                         sudo guix pull && sudo guix package -u && sudo package -i ${deps_to_install[@]} || exit $?
                     elif [ $FETCH -eq 1 ]; then
@@ -203,7 +212,7 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
             esac
             ;;
 
-        macos)
+        macos) # --- MacOS ---
             if ! command -v brew >/dev/null 2>&1; then
                 echo     "\033[92mHomebrew\033[0m is not installed"
                 while true; do
@@ -218,24 +227,29 @@ if [ "${#deps_to_install[@]}" -gt 0 ]; then
             brew update && brew install ${DEPS[@]} || exit $?
             ;;
 
+        # --- Android (Termux) ---
         android-termux) pkg install ${DEPS[@]} || exit $?;;
 
+        # --- Windows ---
         windows-msys2) pacman -S --needed ${DEPS[@]} || exit $?;;
         windows-cygwin)
+            # Checking for apt-cyg
             if command -v apt-cyg >/dev/null 2>&1; then
+                # --- Installing via apt-cyg ---
                 apt-cyg update && apt-cyg install ${DEPS[@]} || exit $?
-            fi
-
-            if [ -n "$XDG_CACHE_HOME" ]; then
-                CACHE="$XDG_CACHE_HOME/dotfiles"
             else
-                CACHE="$HOME/.cache/dotfiles"
+                # --- Installing via official setup-x86_64.exe ---
+                if [ -n "$XDG_CACHE_HOME" ]; then
+                    CACHE="$XDG_CACHE_HOME/dotfiles"
+                else
+                    CACHE="$HOME/.cache/dotfiles"
+                fi
+
+                curl -o "$CACHE/setup-x86_64.exe" 'https://www.cygwin.com/setup-x86_64.exe' || exit $?
+                (IFS=','; "$CACHE/setup-x86_64.exe" -q -P "${DEPS[*]}" -g || exit $?)
+
+                rm -f "$CACHE/setup-x86_64.exe" && rm -df "$CACHE"
             fi
-
-            curl -o "$CACHE/setup-x86_64.exe" 'https://www.cygwin.com/setup-x86_64.exe' || exit $?
-            (IFS=','; "$CACHE/setup-x86_64.exe" -q -P "${DEPS[*]}" -g || exit $?)
-
-            rm -f "$CACHE/setup-x86_64.exe" && rm -df "$CACHE"
             ;;
 
         *) echo "Unknown how to install dependencies for this system"; exit 1;;
