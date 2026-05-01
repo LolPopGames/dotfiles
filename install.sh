@@ -40,8 +40,12 @@ else
     CONFIG_HOME="$HOME/.config"
 fi
 
+not-same-link() {
+    [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]
+}
+
 link-it() {
-    if [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]; then
+    if not-same-link "$1" "$2"; then
         rm -rf "$1"
         ln -s "$2" "$1"
         return 0
@@ -54,10 +58,10 @@ REPO="$DOT/repo"
 
 mkdir -p "$DOT"
 
-cp "$CONFIG" "$DOT/config.sh" 
-sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$DOT/config.sh"
+not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$DOT/config.sh" 
+not-same-link "$DIR"    "$REPO"          && mv "$DIR"    "$REPO"
 
-[ "$DIR" != "$REPO" ] && mv "$DIR" "$REPO"
+sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$DOT/config.sh"
 link-it "$REPO/config.sh" "$DOT/config.sh"
 
 for script in "$REPO"/src/*.sh; do
