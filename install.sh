@@ -62,7 +62,6 @@ if not-same-link "$DIR" "$REPO"; then
     mv "$DIR" "$REPO"
     ln -s "$REPO" "$DIR"
 fi
-not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$REPO/config.sh" 
 link-it "$DOT/config.sh" "$REPO/config.sh"
 
 sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$REPO" | sed 's/[\/&|]/\\&/g')"'"|' "$REPO/config.sh"
