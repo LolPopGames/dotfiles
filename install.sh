@@ -62,7 +62,7 @@ not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$DOT/config.sh"
 not-same-link "$DIR"    "$REPO"          && mv "$DIR"    "$REPO"
 link-it "$REPO/config.sh" "$DOT/config.sh"
 
-sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$REPO/config.sh"
+sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$REPO" | sed 's/[\/&|]/\\&/g')"'"|' "$REPO/config.sh"
 
 for script in "$REPO"/src/*.sh; do
     script_basename="$(basename "$script")"
