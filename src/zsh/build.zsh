@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
-# vim: set foldmethod=syntax:
 set -e
 
 # Custom Config Directory

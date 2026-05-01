@@ -12,7 +12,7 @@ case "$1" in
         echo -e "Edit source files of a complex program config"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-c CONFIG\033[0m  Custom config filename instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-c CONFIG\033[0m\tCustom config filename instead of \033[92mconfig.sh\033[0m"
         echo
         echo "List configs:"
         for dir in "$CONFIG_HOME/dotfiles/"*; do
@@ -34,7 +34,7 @@ case "$1" in
         shift
         shift
         ;;
-    *)  CONFIG="$(dirname "$0")/config.sh";;
+    *) CONFIG="$CONFIG_HOME/dotfiles/config.sh";;
 esac
 
 if [ -f "$CONFIG" ]; then
@@ -51,27 +51,37 @@ else
     exit 1
 fi
 
-if [ -f "$CONFIG_HOME/dotfiles/$1" ]; then
-    if [ -n "$VISUAL" ]; then
-        exec "$VISUAL" "$1"
-    elif [ -n "$EDITOR" ]; then
-        exec "$EDITOR" "$1"
-    elif command -v vim >/dev/null 2>&1; then
-        exec vim "$1"
-    elif command -v vi >/dev/null 2>&1; then
-        exec vi "$1"
-    elif command -v nano >/dev/null 2>&1; then
-        exec nano "$1"
-    elif command -v ed >/dev/null 2>&1; then
-        exec ed "$1"
-    else
-        echo "$0: Failed to found any editor" 2>&1
-        exit 1
-    fi
-elif [ -d "$CONFIG_HOME/dotfiles/$1" ]; then
-    cd "$CONFIG_HOME/dotfiles/$1"
-    exec $SHELL --login
-else
-    echo "$0: $1: No such file or directory" 2>&1
-    exit 1
-fi
+case "$1" in
+    */*)
+        start_part="${1%%/*}"
+        end_part="${1#*/}"
+        file="$CONFIG_HOME/dotfiles/${start_part}/src/${end_part}"
+
+        if [ ! -f "$file" ] && [ ! -d "$file" ]; then
+            echo "$0: $1: No such file or directory" 2>&1
+            exit 1
+        fi
+
+        if [ -n "$VISUAL" ]; then
+            exec "$VISUAL" "$file"
+        elif [ -n "$EDITOR" ]; then
+            exec "$EDITOR" "$file"
+        elif command -v vim >/dev/null 2>&1; then
+            exec vim "$file"
+        elif command -v vi >/dev/null 2>&1; then
+            exec vi "$file"
+        elif command -v nano >/dev/null 2>&1; then
+            exec nano "$file"
+        elif command -v ed >/dev/null 2>&1; then
+            exec ed "$file"
+        else
+            echo "$0: Failed to found any editor" 2>&1
+            exit 1
+        fi
+        ;;
+
+    *)
+        cd "$CONFIG_HOME/dotfiles/$1" || exit $?
+        exec $SHELL --login
+        ;;
+esac

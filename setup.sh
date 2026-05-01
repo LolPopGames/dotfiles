@@ -1,27 +1,28 @@
 #!/usr/bin/env sh
 
-# --- Opening Config ---
+# --- Getting Project Directory ---
+DIR="$(realpath $(dirname "$0"))"
+cd "$DIR" || exit 1
+
+# --- Parsing Arguments ---
 case "$1" in
     -h|--help)
         echo -e "Usage: \033[92m$0\033[0m \033[94m[-o OUTPUT]\033[0m"
         echo -e "Generate configuration for \033[96mLolPopGames'\033[0m dotfiles"
         echo
         echo    "Options:"
-        echo -e "    \033[94m-o OUTPUT\033[0m  custom output config filename instead of \033[92mconfig.sh\033[0m"
+        echo -e "    \033[94m-o OUTPUT\033[0m\tcustom output config filename instead of \033[92mconfig.sh\033[0m"
 
         exit 0
         ;;
     -o) CONFIG="$2";;
-    *)  CONFIG="config.sh";;
+    *)  CONFIG="$DIR/config.sh";;
 esac
 
-# --- Getting Project Directory ---
-DIR="$(realpath $(dirname "$0"))"
-cd "$DIR" || exit 1
-
+# --- Outputing Dir ---
 echo "DIR=\"$DIR\"" > "$CONFIG"
 
-# -- Determining OS --
+# --- Determining OS ---
 os_name=$(uname -s)
 
 case "$os_name" in
@@ -100,6 +101,7 @@ check-for-config gdb
 echo "CONFS=(${confs[@]})" >> "$CONFIG"
 echo "DEPS=(${deps[@]})"   >> "$CONFIG"
 
+# --- Printing dependencies ---
 echo -n 'Dependencies:'
 for dep in ${deps[@]}; do
     if command -v "$dep" >/dev/null 2>&1; then
