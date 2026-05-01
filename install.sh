@@ -41,7 +41,7 @@ else
 fi
 
 not-same-link() {
-    [ "$(readlink -e "$1")" != "$(readlink -e "$2")" ]
+    [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]
 }
 
 link-it() {
@@ -58,9 +58,9 @@ REPO="$DOT/repo"
 
 mkdir -p "$DOT"
 
-not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$DOT/config.sh" 
+not-same-link "$CONFIG" "$DOT/config.sh" && cp "$CONFIG" "$REPO/config.sh" 
 not-same-link "$DIR"    "$REPO"          && mv "$DIR"    "$REPO"
-link-it "$REPO/config.sh" "$DOT/config.sh"
+link-it "$DOT/config.sh" "$REPO/config.sh"
 
 sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$REPO" | sed 's/[\/&|]/\\&/g')"'"|' "$REPO/config.sh"
 
