@@ -85,13 +85,13 @@ done
 # --- Installing Configurations ---
 for conf in ${CONFS[@]}; do
     case "$conf" in
-        mako|waybar|gdb|kitty|cava|vim) link-it "$CONFIG_HOME/$conf" "$REPO/src/$conf";;
         hyprland)
             link-it "$CONFIG_HOME/hypr" "$REPO/src/hypr"
             hyprctl reload >/dev/null 2>/dev/null
             link-it "$CONFIG_HOME/uwsm" "$REPO/src/uwsm"
             ;;
         zsh) link-it "$DOT/$conf" "$REPO/src/$conf";;
+        *) link-it "$CONFIG_HOME/$conf" "$REPO/src/$conf";;
     esac
 done
 

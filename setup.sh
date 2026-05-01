@@ -97,6 +97,7 @@ check-for-config waybar
 check-for-config cava
 check-for-config mintty
 check-for-config gdb
+check-for-config rofi
 
 echo "CONFS=(${confs[@]})" >> "$CONFIG"
 echo "DEPS=(${deps[@]})"   >> "$CONFIG"
