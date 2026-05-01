@@ -57,7 +57,7 @@ mkdir -p "$DOT"
 cp "$CONFIG" "$DOT/config.sh" 
 sed -i 's|DIR="[^"]*"|DIR="'"$(echo -E "$DOT/config.sh" | sed 's/[\/&|]/\\&/g')"'"|' "$DOT/config.sh"
 
-mv "$DIR" "$REPO"
+[ "$DIR" != "$REPO" ] && mv "$DIR" "$REPO"
 link-it "$REPO/config.sh" "$DOT/config.sh"
 
 for script in "$REPO"/src/*.sh; do
