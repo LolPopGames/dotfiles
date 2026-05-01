@@ -63,17 +63,17 @@ case "$1" in
         fi
 
         if [ -n "$VISUAL" ]; then
-            exec "$VISUAL" "$file"
+            "$VISUAL" "$file"
         elif [ -n "$EDITOR" ]; then
-            exec "$EDITOR" "$file"
+            "$EDITOR" "$file"
         elif command -v vim >/dev/null 2>&1; then
-            exec vim "$file"
+            vim "$file"
         elif command -v vi >/dev/null 2>&1; then
-            exec vi "$file"
+            vi "$file"
         elif command -v nano >/dev/null 2>&1; then
-            exec nano "$file"
+            nano "$file"
         elif command -v ed >/dev/null 2>&1; then
-            exec ed "$file"
+            ed "$file"
         else
             echo "$0: Failed to found any editor" 2>&1
             exit 1
