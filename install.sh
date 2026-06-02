@@ -61,6 +61,7 @@ if [ "$INSTALL_REPO" -eq 1 ]; then
         rm -rf "$DOT/$script_basename"
         ln -f -s "$script" "$DOT/$script_basename"
     done
+    link-it "$DOT/modules" "$REPO/modules"
 
     # --- Installing Configurations ---
     for conf in $CONFS; do
@@ -71,7 +72,12 @@ if [ "$INSTALL_REPO" -eq 1 ]; then
                     link-it "$CONFHOME/uwsm" "$REPO/configs/uwsm"
                 fi
                 hyprctl reload >/dev/null 2>/dev/null;;
-            zsh) link-it "$DOT/$conf" "$REPO/configs/$conf";;
+            zsh)
+                link-it "$DOT/$conf" "$REPO/configs/$conf"
+                mkdir -p "$CONFHOME/$conf"
+                link-it "$CONFHOME/$conf/build" "$REPO/configs/$conf"
+                link-it "$DOT/$conf/modules" "$REPO/modules"
+                link-it "$DOT/$conf/main-config.sh" "$REPO/config.sh";;
             *) link-it "$CONFHOME/$conf" "$REPO/configs/$conf";;
         esac
     done
@@ -88,7 +94,10 @@ else
                     rm -rf "$CONFHOME/uwsm" && cp -rf "$REPO/configs/uwsm" "$CONFHOME/uwsm"
                 fi
                 hyprctl reload >/dev/null 2>/dev/null;;
-            zsh) rm -rf "$CONFHOME/$conf/build" && mkdir -p "$CONFHOME/$conf" && cp -rf "$REPO/configs/$conf" "$CONFHOME/$conf/build";;
+            zsh)
+                rm -rf "$CONFHOME/$conf/build" && mkdir -p "$CONFHOME/$conf" && cp -rf "$REPO/configs/$conf" "$CONFHOME/$conf/build"
+                cp "$CONFIG" "$CONFHOME/$conf/build/main-config.sh"
+                cp -r "$REPO/modules" "$CONFHOME/$conf/build";;
             *) rm -rf "$CONFHOME/$conf" && cp -rf "$REPO/configs/$conf" "$CONFHOME/$conf";;
         esac
     done

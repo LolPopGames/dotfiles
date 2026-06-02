@@ -1,0 +1,3 @@
+preexec() {
+    #~~exec-time~~#
+}

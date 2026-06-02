@@ -7,7 +7,6 @@ if [ "$1" = "--help" ]; then
 fi
 
 # Configuration file
-
 CONFIG="config.sh"
 printf '' > "$CONFIG"
 printf '%s\n' "#!/usr/bin/env sh
@@ -185,6 +184,8 @@ if [ -n "$LINUX_FAMILY_BRANCH" ]; then
     printf '%s\n' "LINUX_FAMILY_BRANCH='$LINUX_FAMILY_BRANCH'" >> "$CONFIG"
 fi
 
+printf '%s\n' "OS_ICON='$OS_ICON'" >> "$CONFIG"
+
 case "$OS_COLOR_RGB" in
     ''|[!0123456789]*) printf "OS_COLOR_RGB='%s'\n" "$OS_COLOR_RGB" >> "$CONFIG";;
     *)                 printf "OS_COLOR_RGB=%s\n"   "$OS_COLOR_RGB" >> "$CONFIG";;
@@ -334,7 +335,7 @@ check_for_config() {
     fi
 }
 
-check_for_config hyprland && add_opt_dep uwsm kitty thunar nwg-drawer firefox mako vim gnome-calculator flameshot waybar wl-clipboard hyprpicker dash swaybg
+check_for_config hyprland && add_opt_dep uwsm kitty thunar nwg-drawer firefox mako vim gnome-calculator flameshot waybar wl-clipboard hyprpicker swaybg
 check_for_config zsh && add_opt_dep jq
 check_for_config waybar
 check_for_config mako

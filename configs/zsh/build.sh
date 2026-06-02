@@ -1,1 +1,377 @@
-build.zsh
+#!/usr/bin/env sh
+
+CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
+
+# Openning main config
+MAIN_CONFIG="$CONFHOME/zsh/build/main-config.sh"
+if [ -f "$MAIN_CONFIG" ]; then
+    . "$MAIN_CONFIG"
+else
+    MAIN_SETUP="$CONFHOME/dotfiles/repo/setup.sh"
+    printf '%s: File not found\n' "$MAIN_CONFIG" >&2
+    printf 'Generate %s with %s\n' "$MAIN_CONFIG" "$MAIN_SETUP"
+    exit 1
+fi
+
+# Zsh Configuration file
+CONFIG="$CONFHOME/zsh/build/config.sh"
+SRC="$CONFHOME/zsh/build/src"
+
+if [ -f "$CONFIG" ]; then
+    . "$CONFIG"
+else
+    SETUP="$(dirname "$0")/setup.sh" 
+    printf '%s: File not found\n' "$CONFIG" >&2
+    printf 'Generate %s with %s\n' "$CONFIG" "$SETUP"
+    exit 1
+fi
+
+mark_dot_alias() {
+    if [ "$INSTALL_REPO" -eq 1 ]; then
+        printf '%s' " buildconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/buildconf.sh' confconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/confconf.sh' editconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/editconf.sh' editbuild='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/editbuild.sh'"
+    fi
+}
+
+mark_dot_function() {
+    if [ "$INSTALL_REPO" -eq 1 ]; then
+        printf '%s' '
+dot() {
+    git -C "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/repo" "$@"
+}'
+    fi
+}
+
+mark_dot_var() {
+    if [ "$INSTALL_REPO" -eq 1 ]; then
+        printf ' DOT="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"'
+    fi
+}
+
+mark_sudo() {
+    if [ "$ADD_SUDO_SHORTCUT" -eq 1 ]; then
+        cat "$SRC/sudo.zsh"
+    fi
+}
+
+mark_prompt() {
+    case "$PROMPT_STYLE" in
+        bash)     parse_marks "$SRC/prompt/bash.zsh";;
+        minimal)  cat         "$SRC/prompt/minimal.zsh";;
+        colorful) parse_marks "$SRC/prompt/colorful/colorful.zsh";;
+        *)
+            printf '%s: Unknown prompt style: %s' "$0" "$PROMPT_STYLE" >&2
+            exit 1;;
+    esac
+}
+
+mark_bash_sign() {
+    case "$PROMPT_SIGN" in
+        bash) printf '%s' '%(#.#.$)';;
+        zsh)  printf '%s' '%#';;
+        *)
+            printf '%s: Unknown prompt sign type: %s' "$0" "$PROMPT_SIGN" >&2
+            exit 1;;
+    esac
+}
+
+mark_colorful_newline() {
+    if [ "$MAKE_NEWLINE_IF_NEEDED" -eq 0 ]; then
+        printf '\n'
+    fi
+}
+
+mark_colorful_system() {
+    case "$COLOR_SET" in
+        truecolor) printf '%s' "%F{$OS_COLOR_RGB}";;
+        xterm256)  printf '%s' "%F{$OS_COLOR_XTERM}";;
+        base16)    printf '%s' "%F{$OS_COLOR_BASE16}";;
+        *)
+            printf "%s: Unknown color set: %s" "$0" "$COLOR_SET" >&2
+            exit 1;;
+    esac
+    printf '['
+    case "$CHAR_SET" in
+        nerdfonts) printf '%s' "$OS_ICON";;
+        utf-8)     printf '%s' '🖥️';;
+        ascii)     printf '%s' '@';;
+        *)
+            printf "%s: Unknown char set: %s" "$0" "$CHAR_SET" >&2
+            exit 1;;
+    esac
+    printf '%s' '] '
+    case "$OS_NAME" in
+        linux-*)
+            case "$OS_NAME" in
+                linux-arch) os_name='archlinux';;
+                linux-ldme) os_name='linuxmint';;
+                rhel)       os_name='redhat';;
+                ol)         os_name='oraclelinux';;
+                cachy)      os_name='cachyos';;
+                void)       os_name='voidlinux';;
+                *)          os_name="${OS_NAME#linux-}";;
+            esac;;
+        android-*)  os_name='android';;
+        windows-*)  os_name='windows';;
+        macos)      os_name='macos';;
+        unknown)    os_name='%m';;
+        *)          os_name="$OS_NAME";;
+    esac
+    printf '%s' "$os_name%f"
+}
+
+mark_colorful_user_char() {
+    case "$CHAR_SET" in
+        nerdfonts) printf '%s' "";;
+        utf-8)     printf '%b' "👤%{\uFE0E%}";;
+        ascii)     printf '%s' "%#";;
+    esac
+}
+
+mark_colorful_dir_icon() {
+    case "$CHAR_SET" in
+        nerdfonts)
+            if [ "$MANAGE_DIR_ICON" -eq 1 ]; then
+                printf '$dir_icon'
+            else
+                printf '󰝰'
+            fi;;
+        utf-8)
+            if [ "$MANAGE_DIR_ICON" -eq 1 ]; then
+                printf '$dir_icon'
+            else
+                printf '🖿'
+            fi;;
+        ascii) printf '/';;
+    esac
+}
+
+mark_colorful_git() {
+    if [ "$ENABLE_GIT" -eq 1 ]; then
+        printf ' $git_text'
+    fi }
+
+mark_colorful_exitcode_char() {
+    case "$CHAR_SET" in
+        nerdfonts|utf-8)
+            # Checking for Mintty because a non-ASCII in RPROMPT brokes shell
+            if [ "$(basename "$(ps -p "$PPID" -o comm | tail -n 1)")" = 'mintty' ]; then
+                printf '<'
+                return 0
+            fi
+            printf '↵';;
+        ascii) printf '<';;
+    esac
+}
+
+mark_colorful_exec_time() {
+    if [ "$SHOW_EXEC_TIME" -eq 1 ]; then
+        printf '${exec_time_text}'
+    fi
+}
+
+mark_colorful_job_char() {
+    case "$CHAR_SET" in
+        nerdfonts)
+            # Checking for Mintty because a non-ASCII in RPROMPT brokes shell
+            if [ "$(basename "$(ps -p "$PPID" -o comm | tail -n 1)")" = 'mintty' ]; then
+                printf '*'
+                return 0
+            fi
+            printf '';;
+        utf-8)
+            # Checking for Mintty because a non-ASCII in RPROMPT brokes shell
+            if [ "$(basename "$(ps -p "$PPID" -o comm | tail -n 1)")" = 'mintty' ]; then
+                printf '*'
+                return 0
+            fi
+            printf '⚙';;
+        ascii) printf '*';;
+    esac
+}
+
+mark_coloful_PROMPT4() {
+    case "$COLOR_SET" in
+        truecolor|xterm256) printf '%s' '%F{166}';;
+        base16)             printf '%s' '%F{red}';;
+    esac
+    printf '['
+    case "$CHAR_SET" in
+        nerdfonts) printf '󰃤';;
+        utf-8)     printf '🐞';;
+        ascii)     printf '#';;
+    esac
+    printf '] '
+    case "$COLOR_SET" in
+        truecolor|xterm256) printf '%s' '%F{168}';;
+        base16)             printf '%s' '%F{8}';;
+    esac
+    printf '(%i)%f '
+}
+
+mark_colorful_preexec() {
+    if [ "$SHOW_EXEC_TIME" -eq 1 ]; then
+        parse_marks "$SRC/prompt/colorful/preexec.zsh"
+    fi
+}
+
+mark_colorful_preexec_exec_time() {
+    if [ "$SHOW_EXEC_TIME" -eq 1 ]; then
+        cat "$SRC/prompt/colorful/exec-time/preexec.zsh"
+    fi
+}
+
+mark_colorful_precmd() {
+    if [ "$MAKE_NEWLINE_IF_NEEDED" -eq 1 ] ||
+       [ "$MANAGE_DIR_ICON"        -eq 1 ] ||
+       [ "$ENABLE_GIT"             -eq 1 ] ||
+       [ "$SHOW_EXEC_TIME"         -eq 1 ]; then
+        parse_marks "$SRC/prompt/colorful/precmd.zsh"
+    fi
+}
+
+mark_colorful_precmd_exec_time() {
+    if [ "$SHOW_EXEC_TIME" -eq 1 ]; then
+        parse_marks "$SRC/prompt/colorful/exec-time/precmd.zsh"
+    fi
+}
+
+mark_colorful_exec_time_colors() {
+    case "$COLOR_SET" in
+        truecolor) printf '#d1be0d.99';;
+        xterm256)  printf '178.99';;
+        base16)    printf 'yellow.magenta';;
+    esac
+}
+
+mark_colorful_exec_time_chars() {
+    case "$CHAR_SET" in
+        nerdfonts)
+            # Checking for Mintty because a non-ASCII in RPROMPT brokes shell
+            if [ "$(basename "$(ps -p "$PPID" -o comm | tail -n 1)")" = 'mintty' ]; then
+                printf '~'
+                return 0
+            fi
+            printf '%s' '%(?.󱎫.󱎬)';;
+        utf-8)
+            # Checking for Mintty because a non-ASCII in RPROMPT brokes shell
+            if [ "$(basename "$(ps -p "$PPID" -o comm | tail -n 1)")" = 'mintty' ]; then
+                printf '~'
+                return 0
+            fi
+            printf '⏱';;
+        ascii) printf '~';;
+    esac
+}
+
+mark_colorful_precmd_newline_if_needed() {
+    if [ "$MAKE_NEWLINE_IF_NEEDED" -eq 1 ]; then
+        cat "$SRC/prompt/colorful/newline-if-needed.zsh"
+    fi
+}
+
+mark_colorful_precmd_dir_icon() {
+    if [ "$MANAGE_DIR_ICON" -eq 1 ] && [ "$CHAR_SET" != 'ascii' ]; then
+        parse_marks "$SRC/prompt/colorful/dir-icon.zsh"
+    fi
+}
+
+mark_colorful_dir_icon_char() {
+    case "$CHAR_SET" in
+        nerdfonts)
+            case "$1" in
+                home)       printf '';;
+                code)       printf '';;
+                music)      printf '';;
+                documents)  printf '󰈙';;
+                downloads)  printf '󰜮';;
+                desktop)    printf '󰇄';;
+                pictures)   printf '';;
+                videos)     printf '';;
+                config)     printf '';;
+                root)       printf '󱛟';;
+                usr)        printf '';;
+                locked)     printf '󰌾';;
+                hidden)     printf '󱞞';;
+                empty)      printf '󰷏';;
+                default)    printf '󰝰';;
+            esac;;
+        utf-8)
+            case "$1" in
+                home)       printf '🏠︎';;
+                code)       printf '⌨️';;
+                music)      printf '🎵︎';;
+                documents)  printf '📄';;
+                downloads)  printf '⬇';;
+                desktop)    printf '💻︎';;
+                pictures)   printf '🖼️';;
+                videos)     printf '🎬';;
+                config)     printf '⚙';;
+                root)       printf '💽';;
+                usr)        printf '🛠️';;
+                locked)     printf '🔒';;
+                hidden)     printf '🖿';;
+                empty)      printf '🗁';;
+                default)    printf '🗁';;
+            esac;;
+    esac
+}
+
+mark_colorful_precmd_git() {
+    if [ "$ENABLE_GIT" -eq 1 ]; then
+        parse_marks "$SRC/prompt/colorful/git/git.zsh"
+    fi
+}
+
+mark_colorful_git_remote() {
+    case "$CHAR_SET" in
+        nerdfonts) cat "$SRC/prompt/colorful/git/remote-nerdfonts.zsh";;
+        utf-8)     printf "remote_icon=' 🌐︎'";;
+        ascii)     printf "remote_icon=' @ '";;
+    esac
+}
+
+mark_colorful_git_char() {
+    case "$CHAR_SET" in
+        nerdfonts)
+            case "$1" in
+                staged) printf '';;
+                deleted) printf '';;
+                renamed) printf '';;
+                modified) printf '󰏫';;
+                untracked) printf '';;
+                unmerged) printf '󱐋';;
+                stash) printf '';;
+            esac;;
+        utf-8)
+            case "$1" in
+                staged) printf '✓';;
+                deleted) printf '✗';;
+                renamed) printf '↺';;
+                modified) printf '✎';;
+                untracked) printf '⍰';;
+                unmerged) printf '⚡︎';;
+                stash) printf '▣';;
+            esac;;
+        ascii)
+            case "$1" in
+                staged) printf '+';;
+                deleted) printf 'x';;
+                renamed) printf '>';;
+                modified) printf '!';;
+                untracked) printf '?';;
+                unmerged) printf '*';;
+                stash) printf '#';;
+            esac;;
+    esac
+}
+
+OUTPUT="$OUTPUT_DIR/.zshrc"
+. "$MODULES/marks.sh"
+parse_marks "$SRC/main.zsh" > "$OUTPUT"
+
+if [ -n "$ZSH_VERSION" ]; then
+    zcompile "$OUTPUT"
+elif command -v zsh >/dev/null 2>&1; then
+    . "$MODULES/escaping.sh"
+    zsh -c -- "zcompile \"$(shell_escape_quote "$OUTPUT")\""
+fi

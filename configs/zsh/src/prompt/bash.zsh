@@ -1,1 +1,1 @@
-PROMPT='%F{10}%n@%M%f:%F{blue}%~%f###sign### '
+PROMPT='%F{10}%n@%M%f:%F{blue}%~%f#~~bash_sign~~# '

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 if [ "$1" = '--help' ]; then
-    printf "Builds a complex LolPopGames' config for a program\n\n"
+    printf "Builds a complex LolPopGames' config\n\n"
     printf "List configs:\n"
     for dir in "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/"*; do
         base="$(basename "$dir")"
