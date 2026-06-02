@@ -24,14 +24,14 @@ CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 if [ "$INSTALL_REPO" -eq 1 ]; then
     # --- Not Same Link Function ---
     # Cheks if two files are same with expanding symlinks
-    not-same-link() {
+    not_same_link() {
         [ "$(readlink -f "$1")" != "$(readlink -f "$2")" ]
     }
 
     # --- Link It Function ---
     # Similar to ln, but removes symlink location file to always create a symlink
-    link-it() {
-        if not-same-link "$1" "$2"; then
+    link_it() {
+        if not_same_link "$1" "$2"; then
             rm -rf "$1"
             ln -s "$2" "$1"
         fi
@@ -45,11 +45,11 @@ if [ "$INSTALL_REPO" -eq 1 ]; then
     mkdir -p "$DOT"
 
     # --- Moving repository to $NEW_REPO ---
-    if not-same-link "$REPO" "$NEW_REPO"; then
+    if not_same_link "$REPO" "$NEW_REPO"; then
         mv "$REPO" "$NEW_REPO"
         ln -s "$NEW_REPO" "$REPO"
     fi
-    link-it "$REPO/config.sh" "$NEW_REPO/config.sh"
+    link_it "$REPO/config.sh" "$NEW_REPO/config.sh"
 
     # --- Changing $DIR in config.sh ---
     . "$MODULES/escaping.sh"
@@ -61,24 +61,24 @@ if [ "$INSTALL_REPO" -eq 1 ]; then
         rm -rf "$DOT/$script_basename"
         ln -f -s "$script" "$DOT/$script_basename"
     done
-    link-it "$DOT/modules" "$REPO/modules"
+    link_it "$DOT/modules" "$REPO/modules"
 
     # --- Installing Configurations ---
     for conf in $CONFS; do
         case "$conf" in
             hyprland)
-                link-it "$CONFHOME/hypr" "$REPO/configs/hypr"
+                link_it "$CONFHOME/hypr" "$REPO/configs/hypr"
                 if dep_present uwsm; then
-                    link-it "$CONFHOME/uwsm" "$REPO/configs/uwsm"
+                    link_it "$CONFHOME/uwsm" "$REPO/configs/uwsm"
                 fi
                 hyprctl reload >/dev/null 2>/dev/null;;
             zsh)
-                link-it "$DOT/$conf" "$REPO/configs/$conf"
+                link_it "$DOT/$conf" "$REPO/configs/$conf"
                 mkdir -p "$CONFHOME/$conf"
-                link-it "$CONFHOME/$conf/build" "$REPO/configs/$conf"
-                link-it "$DOT/$conf/modules" "$REPO/modules"
-                link-it "$DOT/$conf/main-config.sh" "$REPO/config.sh";;
-            *) link-it "$CONFHOME/$conf" "$REPO/configs/$conf";;
+                link_it "$CONFHOME/$conf/build" "$REPO/configs/$conf"
+                link_it "$DOT/$conf/modules" "$REPO/modules"
+                link_it "$DOT/$conf/main-config.sh" "$REPO/config.sh";;
+            *) link_it "$CONFHOME/$conf" "$REPO/configs/$conf";;
         esac
     done
 
