@@ -1,3 +1,0 @@
-preexec() {
-    #~~exec-time~~#
-}
