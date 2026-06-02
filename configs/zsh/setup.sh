@@ -80,7 +80,10 @@ fi
 if [ "$PROMPT_STYLE" != 'colorful' ]; then
     CHAR_SET='nerdfonts'
     COLOR_SET='truecolor'
-    SHOW_BATTERY_LEVEL=0
+    case "$OS_NAME" in
+        android-*) SHOW_BATTERY_LEVEL=1;;
+        *)         SHOW_BATTERY_LEVEL=0;;
+    esac
     BATTERY_GREEN_LEVEL=60
     BATTERY_YELLOW_LEVEL=20
     MAKE_NEWLINE_IF_NEEDED=1
@@ -89,11 +92,10 @@ if [ "$PROMPT_STYLE" != 'colorful' ]; then
     SHOW_EXEC_TIME=1
 else
     while true; do
-        printf "Which ${LIGHT_GREEN}char set${RESET} to use? (${BOLD}nerdfonts${RESET}/emoji/utf-8/ascii) "
+        printf "Which ${LIGHT_GREEN}char set${RESET} to use? (${BOLD}nerdfonts${RESET}/utf-8/ascii) "
         read responce
         case "$responce" in
             ''|nerdfonts) CHAR_SET='nerdfonts';;
-            emoji)        CHAR_SET='emoji';;
             utf-8)        CHAR_SET='utf-8';;
             ascii)        CHAR_SET='ascii';;
             *) continue;;
@@ -124,53 +126,61 @@ else
                     *) continue;;
                 esac
                 break
-            done
-
-            if [ "$SHOW_BATTERY_LEVEL" -eq 1 ]; then
-                while true; do
-                    printf "What will be minimal ${LIGHT_GREEN}green${RESET} battery level (from X up to 100%%)? (${BOLD}60%%${RESET}) "
-                    read responce
-                    case "$responce" in
-                        ''|[1-9]%|[1-9][0-9]%|100%) BATTERY_GREEN_LEVEL="${responce%'%'}";;
-                        *) continue;;
-                    esac
-                    break
-                done
-
-                maximum="$((BATTERY_GREEN_LEVEL-1))"
-                if [ "$BATTERY_GREEN_LEVEL" -gt 20 ]; then
-                    recommended=20
-                else
-                    recommended="$maximum"
-                fi
-                while true; do
-                    printf "What will be minimal ${LIGHT_YELLOW}yellow${RESET} battery level (from X up to $maxiumum%%)? (${BOLD}$recommended%%${RESET}) "
-                    read responce
-                    case "$responce" in
-                        '') BATTERY_YELLOW_LEVEL="$recommended"; break;;
-                        *%) responce="${responce%'%'}";;
-                        *) continue;;
-                    esac
-
-                    case "$responce" in
-                        ''|*[!0-9]*) continue;;
-                        [0-9]*) case "$responce" in (0*) continue;; esac;;
-                    esac
-
-                    if [ "$responce" -ge 1 ] && [ "$responce" -le "$maximum" ]; then
-                        BATTERY_YELLOW_LEVEL="$responce"
-                        break
-                    fi
-                done
-            else
-                BATTERY_LEVEL_GREEN=60
-                BATTERY_LEVEL_YELLOW=20
-            fi;;
+            done;;
         *)
-            SHOW_BATTERY_LEVEL=0
-            BATTERY_LEVEL_GREEN=60
-            BATTERY_LEVEL_YELLOW=20;;
+            while true; do
+                printf "Show Android's ${LIGHT_RED}battery level${RESET}? (y/N) "
+                read responce
+                case "$responce" in
+                    [Yy])    SHOW_BATTERY_LEVEL=1;;
+                    ''|[Nn]) SHOW_BATTERY_LEVEL=0;;
+                    *) continue;;
+                esac
+                break
+            done;;
     esac
+
+    if [ "$SHOW_BATTERY_LEVEL" -eq 1 ]; then
+        while true; do
+            printf "What will be minimal ${LIGHT_GREEN}green${RESET} battery level (from X up to 100%%)? (${BOLD}60%%${RESET}) "
+            read responce
+            case "$responce" in
+                '')                      BATTERY_GREEN_LEVEL=60;;
+                [1-9]%|[1-9][0-9]%|100%) BATTERY_GREEN_LEVEL="${responce%'%'}";;
+                *) continue;;
+            esac
+            break
+        done
+
+        maximum="$((BATTERY_GREEN_LEVEL-1))"
+        if [ "$BATTERY_GREEN_LEVEL" -gt 20 ]; then
+            recommended=20
+        else
+            recommended="$maximum"
+        fi
+        while true; do
+            printf "What will be minimal ${LIGHT_YELLOW}yellow${RESET} battery level (from X up to $maxiumum%%)? (${BOLD}$recommended%%${RESET}) "
+            read responce
+            case "$responce" in
+                '') BATTERY_YELLOW_LEVEL="$recommended"; break;;
+                *%) responce="${responce%'%'}";;
+                *) continue;;
+            esac
+
+            case "$responce" in
+                ''|*[!0-9]*) continue;;
+                [0-9]*) case "$responce" in (0*) continue;; esac;;
+            esac
+
+            if [ "$responce" -ge 1 ] && [ "$responce" -le "$maximum" ]; then
+                BATTERY_YELLOW_LEVEL="$responce"
+                break
+            fi
+        done
+    else
+        BATTERY_LEVEL_GREEN=60
+        BATTERY_LEVEL_YELLOW=20
+    fi
 
     while true; do
         printf "Make ${LIGHT_GREEN}newline${RESET} if needed? (Y/n) "
@@ -240,7 +250,6 @@ if [ \"\$PROMPT_STYLE\" = 'bash' ]; then
 elif [ \"\$PROMPT_STYLE\" = 'colorful' ]; then
     # Char set:
     #   'nerdfonts' - UTF-8 with Nerd Fonts
-    #   'emoji' - UTF-8 with emoji
     #   'utf-8' - UTF-8
     #   'ascii' - ASCII
     CHAR_SET='$CHAR_SET'

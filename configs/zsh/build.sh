@@ -92,7 +92,7 @@ mark_colorful_system() {
     printf '['
     case "$CHAR_SET" in
         nerdfonts) printf '%s' "$OS_ICON";;
-        utf-8)     printf '%s' '🖥️';;
+        utf-8)     printf '%s' '🖥';;
         ascii)     printf '%s' '@';;
         *)
             printf "%s: Unknown char set: %s" "$0" "$CHAR_SET" >&2
@@ -326,7 +326,7 @@ mark_colorful_git_remote() {
     case "$CHAR_SET" in
         nerdfonts) cat "$SRC/prompt/colorful/git/remote-nerdfonts.zsh";;
         utf-8)     printf "remote_icon=' 🌐︎'";;
-        ascii)     printf "remote_icon=' @ '";;
+        ascii)     printf "remote_icon=' @'";;
     esac
 }
 
