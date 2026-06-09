@@ -352,8 +352,16 @@ OUTPUT="$OUTPUT_DIR/.zshrc"
 . "$MODULES/marks.sh"
 parse_marks "$SRC/main.zsh" > "$OUTPUT"
 
+if [ "$OUTPUT" != "$HOME/.zshrc" ]; then
+cat >> "$HOME/.zshrc" << EOF
+ZDOTDIR="\${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh" zsh --login
+EOF
+fi
+
 if [ -n "$ZSH_VERSION" ]; then
     zcompile "$OUTPUT"
+    [ "$OUTPUT" != "$HOME/.zshrc" ] && zcompile "$HOME/.zshrc"
 elif command -v zsh >/dev/null 2>&1; then
     zsh -c -- "zcompile \"$(shell_escape_quote "$OUTPUT")\""
+    [ "$OUTPUT" != "$HOME/.zshrc" ] && zsh -c -- "zcompile \"$(shell_escape_quote "$HOME/.zshrc")\""
 fi
