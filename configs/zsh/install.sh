@@ -22,6 +22,11 @@ mark_PROMPT_SUBST() {
     fi
 }
 
+. "$MODULES/escaping.sh"
+mark_dot_path() {
+    shell_escape_quote "$(realpath -ms "$DIR/../..")"
+}
+
 mark_sudo() {
     if [ "$ADD_SUDO_SHORTCUT" -eq 1 ]; then
         cat "$SRC/sudo.zsh"
@@ -309,6 +314,7 @@ mark_colorful_git_char() {
     case "$CHAR_SET" in
         nerdfonts)
             case "$1" in
+                logo) printf '󰊢';;
                 staged) printf '';;
                 deleted) printf '';;
                 renamed) printf '';;
@@ -319,6 +325,7 @@ mark_colorful_git_char() {
             esac;;
         utf-8)
             case "$1" in
+                logo) printf '⎇';;
                 staged) printf '✓';;
                 deleted) printf '✗';;
                 renamed) printf '↺';;
@@ -329,6 +336,7 @@ mark_colorful_git_char() {
             esac;;
         ascii)
             case "$1" in
+                logo) printf 'g';;
                 staged) printf '+';;
                 deleted) printf 'x';;
                 renamed) printf '>';;
@@ -347,6 +355,5 @@ parse_marks "$SRC/main.zsh" > "$OUTPUT"
 if [ -n "$ZSH_VERSION" ]; then
     zcompile "$OUTPUT"
 elif command -v zsh >/dev/null 2>&1; then
-    . "$MODULES/escaping.sh"
     zsh -c -- "zcompile \"$(shell_escape_quote "$OUTPUT")\""
 fi

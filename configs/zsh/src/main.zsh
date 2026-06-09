@@ -2,7 +2,7 @@ echo -n $'\e[5 q'
 setopt AUTO_CD AUTO_PUSHD PUSHD_SILENT LIST_BEEP LIST_TYPES EXTENDED_GLOB NULL_GLOB HIST_IGNORE_DUPS SHARE_HISTORY INC_APPEND_HISTORY HIST_REDUCE_BLANKS APPEND_HISTORY INTERACTIVE_COMMENTS MULTIOS PIPE_FAIL CORRECT#~~PROMPT_SUBST~~# BEEP
 alias e='exit' q='exit' :q='exit' ls='ls --color=auto -h' la='ls -a' ll='ls -al' lA='ls -A' lL='ls -Al' l='ls -A' clear='reset' cls='reset' c='reset' g='git' ga='git add' ga.='git add .' gc='git commit --verbose' gC='ga. && gc' gp='git push' gr='git remote' gl='git pull' gb='git branch' gco='git checkout' gs='git switch' grs='git restore' gst='git status' md='mkdir -p' p='poweroff' sudo='sudo ' s='sudo' _='sudo' grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox,.venv,venv}' egrep='grep -E' pacman='pacman --color=auto' paru='paru --color=auto' code='code-oss' ...='../..' ....='../../..' .....='../../../..' ......='../../../../..' .......='../../../../../..' ........='../../../../../../..'
 dot() {
-    git -C "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/repo" "$@"
+    git -C "#~~dot_path~~#" "$@"
 }
 bindkey '^[[Z' reverse-menu-complete
 bindkey '^?' backward-delete-char
