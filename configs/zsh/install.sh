@@ -2,48 +2,23 @@
 
 CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 
-# Openning main config
-MAIN_CONFIG="$CONFHOME/zsh/build/main-config.sh"
-if [ -f "$MAIN_CONFIG" ]; then
-    . "$MAIN_CONFIG"
-else
-    MAIN_SETUP="$CONFHOME/dotfiles/repo/setup.sh"
-    printf '%s: File not found\n' "$MAIN_CONFIG" >&2
-    printf 'Generate %s with %s\n' "$MAIN_CONFIG" "$MAIN_SETUP"
-    exit 1
-fi
-
-# Zsh Configuration file
-CONFIG="$CONFHOME/zsh/build/config.sh"
-SRC="$CONFHOME/zsh/build/src"
+# --- Config ---
+DIR="$(dirname "$(readlink -m "$0")")"
+CONFIG="$DIR/config.sh"
 
 if [ -f "$CONFIG" ]; then
     . "$CONFIG"
 else
-    SETUP="$(dirname "$0")/setup.sh" 
-    printf '%s: File not found\n' "$CONFIG" >&2
-    printf 'Generate %s with %s\n' "$CONFIG" "$SETUP"
+cat >&2 << EOF
+config.sh: File not found
+Generate config.sh with %s
+EOF
     exit 1
 fi
 
-mark_dot_alias() {
-    if [ "$INSTALL_REPO" -eq 1 ]; then
-        printf '%s' " buildconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/buildconf.sh' confconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/confconf.sh' editconf='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/editconf.sh' editbuild='\${XDG_CONFIG_HOME:-\"\$HOME/.config\"}/dotfiles/editbuild.sh'"
-    fi
-}
-
-mark_dot_function() {
-    if [ "$INSTALL_REPO" -eq 1 ]; then
-        printf '%s' '
-dot() {
-    git -C "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/repo" "$@"
-}'
-    fi
-}
-
-mark_dot_var() {
-    if [ "$INSTALL_REPO" -eq 1 ]; then
-        printf ' DOT="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"'
+mark_PROMPT_SUBST() {
+    if [ "$PROMPT_STYLE" = colorful ]; then
+        printf ' PROMPT_SUBST'
     fi
 }
 

@@ -2,38 +2,20 @@
 
 CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 
-# Openning main config
-MAIN_CONFIG="$CONFHOME/dotfiles/config.sh"
-if [ -f "$MAIN_CONFIG" ]; then
-    . "$MAIN_CONFIG"
-else
-    MAIN_CONFIG_="$CONFHOME/zsh/build/main_config.sh"
-    if [ -f "$MAIN_CONFIG" ]; then
-        MAIN_CONFIG="$MAIN_CONFIG_"
-        . "$MAIN_CONFIG"
-    else
-        MAIN_SETUP="$(dirname "$0")/../../setup.sh"
-        printf '%s: File not found\n' "$MAIN_CONFIG" >&2
-        printf 'Generate %s with %s\n' "$MAIN_CONFIG" "$MAIN_SETUP"
-        exit 1
-    fi
-fi
+# --- Config and Modules ---
+DIR="$(dirname "$(readlink -m "$0")")"
+CONFIG="$DIR/config.sh"
+MODULES="$DIR/../../modules"
+SRC="$DIR/src"
 
-# Zsh Configuration file
-if [ "$INSTALL_REPO" -eq 1 ]; then
-    CONFIG="$CONFHOME/dotfiles/zsh/config.sh"
-else
-    CONFIG="$CONFHOME/zsh/build/config.sh"
-fi
-
-
+# --- Getting Infomation
 . "$MODULES/colors.sh"
 while true; do
     printf "Where will be ${LIGHT_GREEN}output dir${RESET}? (${BOLD}inconfig${RESET}/home) "
     read responce
     case "$responce" in
-        ''|inconfig) OUTPUT_DIR='${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh';;
-        home)        OUTPUT_DIR='$HOME';;
+        ''|inconfig) OUTPUT_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh";;
+        home)        OUTPUT_DIR="$HOME";;
         *) continue;;
     esac
     break
@@ -227,11 +209,30 @@ else
     done
 fi
 
-printf '%s\n' "#!/usr/bin/env sh
+# --- Outputing ---
+. "$MODULES/os-info.sh"
+case "$OS_COLOR_RGB" in (''|[!0-9]*) OS_COLOR_RGB="'$OS_COLOR_RGB'";; esac
+case "$OS_COLOR_XTERM" in (''|[!0-9]*) OS_COLOR_XTERM="'$OS_COLOR_XTERM'";; esac
+case "$OS_COLOR_BASE16" in (''|[!0-9]*) OS_COLOR_BASE16="'$OS_COLOR_BASE16'";; esac
+
+. "$MODULES/escaping.sh"
+cat > "$CONFIG" << EOF
+#!/usr/bin/env sh
 # Configuration file for LolPopGames' Zsh complex config
 
-# Output directory
-OUTPUT_DIR=\"$OUTPUT_DIR\"
+# Enviroment
+DIR="$(shell_escape_quote "$DIR")"
+MODULES="\$DIR/../../modules"
+SRC="$(shell_escape_quote "$SRC")"
+OUTPUT_DIR="$(shell_escape_quote "$OUTPUT_DIR")"
+
+# System Stats
+OS_NAME='$OS_NAME'${LINUX_FAMILY_BRANCH:+"
+LINUX_FAMILY_BRANCH='$LINUX_FAMILY_BRANCH'"}
+OS_ICON=''
+OS_COLOR_RGB='#1793d1'
+OS_COLOR_XTERM=32
+OS_COLOR_BASE16='cyan'
 
 # Add shortcut, that will add 'sudo' to any command runned with
 # ctrl+enter instead of just enter (preconfigurated kitty is needed)
@@ -242,12 +243,12 @@ ADD_SUDO_SHORTCUT=$ADD_SUDO_SHORTCUT
 #   'bash' - Bash-like
 #   'minimal' - Minimal
 PROMPT_STYLE='$PROMPT_STYLE'
-if [ \"\$PROMPT_STYLE\" = 'bash' ]; then
+if [ "\$PROMPT_STYLE" = 'bash' ]; then
     # Prompt sign ($ or #):
     #   'bash' - Bash-like ($/#)
     #   'zsh' - Zsh-like (%/#)
     PROMPT_SIGN='$PROMPT_SIGN'
-elif [ \"\$PROMPT_STYLE\" = 'colorful' ]; then
+elif [ "\$PROMPT_STYLE" = 'colorful' ]; then
     # Char set:
     #   'nerdfonts' - UTF-8 with Nerd Fonts
     #   'utf-8' - UTF-8
@@ -261,7 +262,7 @@ elif [ \"\$PROMPT_STYLE\" = 'colorful' ]; then
 
     # Enables Android's battery level integration
     SHOW_BATTERY_LEVEL=$SHOW_BATTERY_LEVEL
-    if [ \"\$SHOW_BATTERY_LEVEL\" -eq 1 ]; then
+    if [ "\$SHOW_BATTERY_LEVEL" -eq 1 ]; then
         # The minimum green and yellow battery level
         # (red minimum battery level is always 1)
         BATTERY_LEVEL_GREEN=$BATTERY_LEVEL_GREEN
@@ -277,5 +278,5 @@ elif [ \"\$PROMPT_STYLE\" = 'colorful' ]; then
     ENABLE_GIT=$ENABLE_GIT
     # Shows command execution time
     SHOW_EXEC_TIME=$SHOW_EXEC_TIME
-fi" > "$CONFIG"
-
+fi
+EOF
