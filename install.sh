@@ -84,7 +84,7 @@ for conf in $CONFS; do
             if dep_present uwsm; then
                 link_it "$CONFHOME/uwsm" "$DIR/configs/uwsm"
             fi
-            hyprctl reload >/dev/null 2>/dev/null;;
+            hyprctl reload >/dev/null 2>/dev/null || :;;
         zsh);; # The build script will automatically create the dir and the configs
         *) link_it "$CONFHOME/$conf" "$DIR/configs/$conf";;
     esac
