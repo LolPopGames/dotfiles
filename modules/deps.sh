@@ -3,6 +3,8 @@
 if [ -z "$_deps_sh__included" ]; then
 _deps_sh__included=1
 
+confs= deps= optdeps= dep_output=
+
 # Usage:
 #   dep_present DEP
 # Description
@@ -33,46 +35,42 @@ gvim_present() {
 # Description
 #   Adds required dependencies to $deps
 add_dep() {
-    for arg in "$@"; do
+    _add_dep__start=1
+    while [ $# -gt 0 ]; do
+        [ $_add_dep__start -eq 0 ] && shift || _add_dep__start=0
+
         # Exiting if already exists in $deps
-        continue_next=0
-        for dep in $deps; do
-            [ "$arg" = "$dep" ] && continue_next=1 && break
-        done
-        [ $continue_next -eq 1 ] && continue
+        case " $deps " in (*" $1 "*) continue;; esac
 
         # Revoming from $optdeps and adding to $deps, if found
-        for dep in $optdeps; do
-            if [ "$arg" = "$dep" ]; then
-                # Adding to $deps
-                deps="$deps $arg"
+        case " $optdeps " in (*" $1 "*)
+            # Adding to $deps
+            deps="$deps $1"
 
-                # Removing from optional dependencies
-                optdeps_prefix="${optdeps%%"$arg"*}"
-                optdeps_suffix="${optdeps#*"$arg "}"
-                optdeps="${optdeps_prefix}${optdeps_suffix}"
+            # Removing from optional dependencies
+            optdeps=" $optdeps "
+            _add_dep__prefix="${optdeps%%" $1 "*}"
+            _add_dep__suffix="${optdeps#*" $1 "}"
+            _add_dep__prefix="${_add_dep__prefix# }" _add_dep__suffix="${_add_dep__suffix% }"
+            optdeps="${_add_dep__prefix:+"$_add_dep__prefix "}${_add_dep__suffix}"
 
-                # Changing color in $dep_output
-                if [ -n "${YELLOW}" ]; then case "$dep_output" in
-                    *"${YELLOW}$arg${RESET}"*)
-                        dep_output_prefix="${dep_output%%"${YELLOW}$arg${RESET}"*}"
-                        dep_output_suffix="${dep_output#*"${YELLOW}$arg${RESET}"}"
-                        dep_output="${dep_output_prefix}${RED}$arg${RESET}${dep_output_suffix}"
-                        ;;
-                esac; fi
+            # Changing color in $dep_output
+            case "$dep_output" in (*"${YELLOW}$1${RESET}"*) # Skipping if dep is already green
+                _add_dep__prefix="${dep_output%%"${YELLOW}$1${RESET}"*}"
+                _add_dep__suffix="${dep_output#*"${YELLOW}$1${RESET}"}"
+                dep_output="${_add_dep__prefix}${RED}$1${RESET}${_add_dep__suffix}";;
+            esac
 
-                continue_next=1
-                break
-            fi
-        done
-        [ $continue_next -eq 1 ] && continue
+            continue;;
+        esac
 
-        # If non of above, adding to $deps
-        if dep_present "$arg"; then
-            dep_output="$dep_output ${GREEN}$arg${RESET}"
-        deps="$deps $arg"
+
+        # If non of above, just adding to $deps
+        if dep_present "$1"; then
+            dep_output="$dep_output ${GREEN}$1${RESET}"
+            deps="$deps $1"
         else
-            dep_output="$dep_output ${RED}$arg${RESET}"
+            dep_output="$dep_output ${RED}$1${RESET}"
         fi
     done
 }
@@ -82,30 +80,67 @@ add_dep() {
 # Description:
 #   Adds optional dependencies to $optdeps
 add_opt_dep() {
-    for arg in "$@"; do
-        # Exiting if already exists in $deps
-        continue_next=0
-        for dep in $deps; do
-            [ "$arg" = "$dep" ] && continue_next=1 && break
-        done
-        [ $continue_next -eq 1 ] && continue
+    _add_dep__start=1
+    while [ $# -gt 0 ]; do
+        [ $_add_dep__start -eq 0 ] && shift || _add_dep__start=0
 
-        # Exiting if already exists in $optdeps
-        for dep in $optdeps; do
-            [ "$arg" = "$dep" ] && continue_next=1 && break
-        done
-        [ $continue_next -eq 1 ] && continue
+        # Exiting if already exists in $deps or $optdeps
+        case " $deps $optdeps " in (*" $1 "*) continue;; esac
 
-        # If non of above, adding to $optdeps
-        optdeps="$optdeps $arg"
-        if dep_present "$arg"; then
-            dep_output="$dep_output ${GREEN}$arg${RESET}"
+        # Adding to $optdeps
+        optdeps="$optdeps $1"
+        if dep_present "$1"; then
+            dep_output="$dep_output ${GREEN}$1${RESET}"
         else
-            dep_output="$dep_output ${YELLOW}$arg${RESET}"
+            dep_output="$dep_output ${YELLOW}$1${RESET}"
         fi
     done
 }
 
+# Usage:
+#   check_for_config CONFIG
+# Description:
+#   Checks to install a config
+check_for_config() {
+    _check_for_config__present=0
+    if dep_present "$1"; then
+        _check_for_config__present=1
+    fi
+    case " $deps $optdeps " in
+        *" $1 "*) _check_for_config__present=1;;
+    esac
+
+    if [ $_check_for_config__present -eq 1 ]; then
+        while true; do
+            printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Install config for ${LIGHT_GREEN}%s${RESET}? [${BOLD}Y${RESET}/n] " "$1"
+            read _check_for_config__responce
+            case "$_check_for_config__responce" in
+                [Yy]|'');;
+                [Nn]) return;;
+            esac
+        done
+    else
+        while true; do
+            printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}Install config for ${LIGHT_RED}%s${RESET}? [y/${BOLD}N${RESET}] " "$1"
+            read responce
+            case "$responce" in
+                [Nn]|'') return;;
+                [Yy]);;
+            esac
+        done
+    fi
+    confs="$confs $1"
+
+    [ -f "$DIR/configs/$1/setup.sh" ] && "$DIR/configs/$1/setup.sh" -i
+    {
+        IFS= read -r _check_config__extra_deps
+        IFS= read -r _check_config__extra_optdeps
+    } << EOF
+    $("$DIR/configs/$1/install-deps.sh" -d)
+EOF
+    add_dep "$_check_config__extra_deps"
+    add_opt_dep "$_check_for_config__extra_opt_deps"
+}
 
 # Usage:
 #   install_deps [-yu] [DEP]...

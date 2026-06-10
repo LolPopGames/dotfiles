@@ -3,16 +3,51 @@
 if [ -z "$_colors_sh__included" ]; then
 _colors_sh__included=1
 
-RESET="\033[0m"
-BOLD="\033[1m"
-RED="\033[31m"
-GREEN="\033[32m"
-YELLOW="\033[33m"
-LIGHT_RED="\033[91m"
-LIGHT_GREEN="\033[92m"
-LIGHT_YELLOW="\033[93m"
-LIGHT_BLUE="\033[94m"
-LIGHT_CYAN="\033[96m"
+# --- Color Constants ---
+# Main
+ESC="$(printf '\033')"
+RESET="$ESC[0m"
+BOLD="$ESC[1m"
+
+# Normal colors
+BLACK="$ESC[30m"
+RED="$ESC[31m"
+GREEN="$ESC[32m"
+YELLOW="$ESC[33m"
+BLUE="$ESC[34m"
+MAGENTA="$ESC[35m"
+CYAN="$ESC[36m"
+WHITE="$ESC[37m"
+
+# Background normal colors
+BG_BLACK="$ESC[40m"
+BG_RED="$ESC[41m"
+BG_GREEN="$ESC[42m"
+BG_YELLOW="$ESC[43m"
+BG_BLUE="$ESC[44m"
+BG_MAGENTA="$ESC[45m"
+BG_CYAN="$ESC[46m"
+BG_WHITE="$ESC[47m"
+
+# Light colors
+LIGHT_BLACK="$ESC[90m"
+LIGHT_RED="$ESC[91m"
+LIGHT_GREEN="$ESC[92m"
+LIGHT_YELLOW="$ESC[93m"
+LIGHT_BLUE="$ESC[94m"
+LIGHT_MAGENTA="$ESC[95m"
+LIGHT_CYAN="$ESC[96m"
+LIGHT_WHITE="$ESC[97m"
+
+# Background light colors
+BG_LIGHT_BLACK="$ESC[100m"
+BG_LIGHT_RED="$ESC[101m"
+BG_LIGHT_GREEN="$ESC[102m"
+BG_LIGHT_YELLOW="$ESC[103m"
+BG_LIGHT_BLUE="$ESC[104m"
+BG_LIGHT_MAGENTA="$ESC[105m"
+BG_LIGHT_CYAN="$ESC[106m"
+BG_LIGHT_WHITE="$ESC[107m"
 
 # --- RGB to xterm256 Function ---
 # Usage:

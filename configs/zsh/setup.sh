@@ -1,17 +1,10 @@
 #!/usr/bin/env sh
 
-CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
-
-# --- Config and Modules ---
-DIR="$(dirname "$(readlink -m "$0")")"
-CONFIG="$DIR/config.sh"
-MODULES="$DIR/../../modules"
-SRC="$DIR/src"
+. "$(dirname "$(readlink -m "$0")")/../../modules/preloaded/preloaded.sh"
 
 # --- Getting Infomation
-. "$MODULES/colors.sh"
 while true; do
-    printf "Where will be ${LIGHT_GREEN}output dir${RESET}? (${BOLD}inconfig${RESET}/home) "
+    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Where will be ${LIGHT_GREEN}output dir${RESET}? (${BOLD}inconfig${RESET}/home) "
     read responce
     case "$responce" in
         ''|inconfig) OUTPUT_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh";;
@@ -22,7 +15,7 @@ while true; do
 done
 
 while true; do
-    printf "Add sudo shortcut for ${LIGHT_GREEN}ctrl+enter${RESET} (preconfigured kitty is needed)? (Y/n) "
+    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Add sudo shortcut for ${LIGHT_GREEN}ctrl+enter${RESET} (preconfigured kitty is needed)? (Y/n) "
     read responce
     case "$responce" in
         ''|[Yy]) ADD_SUDO_SHORTCUT=1;;
@@ -33,7 +26,7 @@ while true; do
 done
 
 while true; do
-    printf "Which ${LIGHT_GREEN}theme${RESET} to use? (${BOLD}colorful${RESET}/bash/minimal) "
+    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}theme${RESET} to use? (${BOLD}colorful${RESET}/bash/minimal) "
     read responce
     case "$responce" in
         ''|colorful) PROMPT_STYLE='colorful';;
@@ -48,7 +41,7 @@ if [ "$PROMPT_STYLE" != 'bash' ]; then
     PROMPT_SIGN='bash'
 else
     while true; do
-        printf "Which type of ${LIGHT_GREEN}prompt sign${RESET} ($/#) to use? (${BOLD}bash${RESET}/zsh) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which type of ${LIGHT_GREEN}prompt sign${RESET} ($/#) to use? (${BOLD}bash${RESET}/zsh) "
         read responce
         case "$responce" in
             ''|bash) PROMPT_SIGN='bash';;
@@ -74,7 +67,7 @@ if [ "$PROMPT_STYLE" != 'colorful' ]; then
     SHOW_EXEC_TIME=1
 else
     while true; do
-        printf "Which ${LIGHT_GREEN}char set${RESET} to use? (${BOLD}nerdfonts${RESET}/utf-8/ascii) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}char set${RESET} to use? (${BOLD}nerdfonts${RESET}/utf-8/ascii) "
         read responce
         case "$responce" in
             ''|nerdfonts) CHAR_SET='nerdfonts';;
@@ -86,7 +79,7 @@ else
     done
 
     while true; do
-        printf "Which ${LIGHT_GREEN}color set${RESET} to use? (${BOLD}truecolor${RESET}/xterm256/base16) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}color set${RESET} to use? (${BOLD}truecolor${RESET}/xterm256/base16) "
         read responce
         case "$responce" in
             ''|truecolor) COLOR_SET='truecolor';;
@@ -100,7 +93,7 @@ else
     case "$OS_NAME" in
         android-*)
             while true; do
-                printf "Show Android's ${LIGHT_GREEN}battery level${RESET}? (Y/n) "
+                printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Show Android's ${LIGHT_GREEN}battery level${RESET}? (Y/n) "
                 read responce
                 case "$responce" in
                     ''|[Yy]) SHOW_BATTERY_LEVEL=1;;
@@ -111,7 +104,7 @@ else
             done;;
         *)
             while true; do
-                printf "Show Android's ${LIGHT_RED}battery level${RESET}? (y/N) "
+                printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}Show Android's ${LIGHT_RED}battery level${RESET}? (y/N) "
                 read responce
                 case "$responce" in
                     [Yy])    SHOW_BATTERY_LEVEL=1;;
@@ -124,7 +117,7 @@ else
 
     if [ "$SHOW_BATTERY_LEVEL" -eq 1 ]; then
         while true; do
-            printf "What will be minimal ${LIGHT_GREEN}green${RESET} battery level (from X up to 100%%)? (${BOLD}60%%${RESET}) "
+            printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}What will be minimal ${LIGHT_GREEN}green${RESET} battery level (from X up to 100%%)? (${BOLD}60%%${RESET}) "
             read responce
             case "$responce" in
                 '')                      BATTERY_GREEN_LEVEL=60;;
@@ -141,7 +134,7 @@ else
             recommended="$maximum"
         fi
         while true; do
-            printf "What will be minimal ${LIGHT_YELLOW}yellow${RESET} battery level (from X up to $maxiumum%%)? (${BOLD}$recommended%%${RESET}) "
+            printf "${INDENT:+"${LIGHT_YELLOW}=>${RESET} "}What will be minimal ${LIGHT_YELLOW}yellow${RESET} battery level (from X up to $maxiumum%%)? (${BOLD}$recommended%%${RESET}) "
             read responce
             case "$responce" in
                 '') BATTERY_YELLOW_LEVEL="$recommended"; break;;
@@ -165,7 +158,7 @@ else
     fi
 
     while true; do
-        printf "Make ${LIGHT_GREEN}newline${RESET} if needed? (Y/n) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Make ${LIGHT_GREEN}newline${RESET} if needed? (Y/n) "
         read responce
         case "$responce" in
             ''|[Yy]) MAKE_NEWLINE_IF_NEEDED=1;;
@@ -176,7 +169,7 @@ else
     done
 
     while true; do
-        printf "Manage ${LIGHT_GREEN}dir icon${RESET}? (Y/n) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Manage ${LIGHT_GREEN}dir icon${RESET}? (Y/n) "
         read responce
         case "$responce" in
             ''|[Yy]) MANAGE_DIR_ICON=1;;
@@ -187,7 +180,7 @@ else
     done
 
     while true; do
-        printf "Enable ${LIGHT_GREEN}git${RESET} integration? (Y/n) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Enable ${LIGHT_GREEN}git${RESET} integration? (Y/n) "
         read responce
         case "$responce" in
             ''|[Yy]) ENABLE_GIT=1;;
@@ -198,7 +191,7 @@ else
     done
 
     while true; do
-        printf "Show commands' ${LIGHT_GREEN}execution time${RESET}? (Y/n) "
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Show commands' ${LIGHT_GREEN}execution time${RESET}? (Y/n) "
         read responce
         case "$responce" in
             ''|[Yy]) SHOW_EXEC_TIME=1;;
@@ -210,30 +203,8 @@ else
 fi
 
 # --- Outputing ---
-. "$MODULES/os-info.sh"
-case "$OS_COLOR_RGB" in (''|[!0-9]*) OS_COLOR_RGB="'$OS_COLOR_RGB'";; esac
-case "$OS_COLOR_XTERM" in (''|[!0-9]*) OS_COLOR_XTERM="'$OS_COLOR_XTERM'";; esac
-case "$OS_COLOR_BASE16" in (''|[!0-9]*) OS_COLOR_BASE16="'$OS_COLOR_BASE16'";; esac
-
 . "$MODULES/escaping.sh"
-cat > "$CONFIG" << EOF
-#!/usr/bin/env sh
-# Configuration file for LolPopGames' Zsh complex config
-
-# Enviroment
-DIR="$(shell_escape_quote "$DIR")"
-MODULES="\$DIR/../../modules"
-SRC="$(shell_escape_quote "$SRC")"
-OUTPUT_DIR="$(shell_escape_quote "$OUTPUT_DIR")"
-
-# System Stats
-OS_NAME='$OS_NAME'${LINUX_FAMILY_BRANCH:+"
-LINUX_FAMILY_BRANCH='$LINUX_FAMILY_BRANCH'"}
-OS_ICON=''
-OS_COLOR_RGB='#1793d1'
-OS_COLOR_XTERM=32
-OS_COLOR_BASE16='cyan'
-
+cat >> "$CONFIG" << EOF
 # Add shortcut, that will add 'sudo' to any command runned with
 # ctrl+enter instead of just enter (preconfigurated kitty is needed)
 ADD_SUDO_SHORTCUT=$ADD_SUDO_SHORTCUT

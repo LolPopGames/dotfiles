@@ -74,7 +74,7 @@ case "$os_name_" in
                     # If /etc/os-release declared color
                     if [ -n "$ANSI_COLOR" ]; then
                         case "$ANSI_COLOR" in
-                            38\;2\;*) # rgb
+                            '38;2;'*) # rgb
                                 ANSI_COLOR="${ANSI_COLOR#38;2;}"
                                 RED_COLOR="${ANSI_COLOR%%;*}"
                                 ANSI_COLOR="${ANSI_COLOR#*;}"
@@ -85,7 +85,7 @@ case "$os_name_" in
                                 OS_COLOR_XTERM="$(rgb_to_xterm256 "$RED_COLOR" "$GREEN_COLOR" "$BLUE_COLOR")"
                                 OS_COLOR_BASE16="$(rgb_to_base16 "$RED_COLOR" "$GREEN_COLOR" "$BLUE_COLOR")";;
 
-                            38\;5\;*) # xterm256
+                            '38;5'*) # xterm256
                                 OS_COLOR_XTERM="${ANSI_COLOR#38;5;}"
                                 OS_COLOR_RGB="$OS_COLOR_RGB"
                                 OS_COLOR_BASE16="$(xterm_to_base16 "$OS_COLOR_XTERM")";;

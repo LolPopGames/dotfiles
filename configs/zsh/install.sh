@@ -1,20 +1,6 @@
 #!/usr/bin/env sh
 
-CONFHOME="${XDG_CONFIG_HOME:-"$HOME/.config"}"
-
-# --- Config ---
-DIR="$(dirname "$(readlink -m "$0")")"
-CONFIG="$DIR/config.sh"
-
-if [ -f "$CONFIG" ]; then
-    . "$CONFIG"
-else
-cat >&2 << EOF
-config.sh: File not found
-Generate config.sh with %s
-EOF
-    exit 1
-fi
+. "$(dirname "$(readlink -m "$0")")/../../modules/preloaded/preloaded.sh"
 
 mark_PROMPT_SUBST() {
     if [ "$PROMPT_STYLE" = colorful ]; then
@@ -348,12 +334,13 @@ mark_colorful_git_char() {
     esac
 }
 
-OUTPUT="$OUTPUT_DIR/.zshrc"
+SRC="$DIR/src"
+OUTPUT="$CONFHOME/zsh/.zshrc"
 . "$MODULES/marks.sh"
 parse_marks "$SRC/main.zsh" > "$OUTPUT"
 
 if [ "$OUTPUT" != "$HOME/.zshrc" ]; then
-cat >> "$HOME/.zshrc" << EOF
+cat > "$HOME/.zshrc" << EOF
 ZDOTDIR="\${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh" zsh --login
 EOF
 fi
