@@ -40,7 +40,7 @@ find_option() {
 }
 
 parse_args "$@"
-load_config || :
+load_config
 
 # --- Not Same Link Function ---
 # Usage:

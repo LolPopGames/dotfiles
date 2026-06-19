@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # Escaping Strings Module
 if [ -z "$_escaping_sh__included" ]; then
 _escaping_sh__included=1

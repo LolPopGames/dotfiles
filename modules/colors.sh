@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # Colors Manipulation Module
 if [ -z "$_colors_sh__included" ]; then
 _colors_sh__included=1

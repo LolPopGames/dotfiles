@@ -46,35 +46,167 @@ esac
 
 parse_args "$@"
 
-# --- Determining OS ---
-. "$MODULES/os-info.sh"
-case "$OS_COLOR_RGB" in
-    [!0-9]*) OS_COLOR_RGB="'$OS_COLOR_RGB'";;
-    *)       OS_COLOR_RGB="$OS_COLOR_RGB";;
-esac
-case "$OS_COLOR_XTERM" in
-    [!0-9]*) OS_COLOR_XTERM="'$OS_COLOR_XTERM'";;
-    *)       OS_COLOR_XTERM="$OS_COLOR_XTERM";;
-esac
-case "$OS_COLOR_BASE16" in
-    [!0-9]*) OS_COLOR_BASE16="'$OS_COLOR_BASE16'";;
-    *)       OS_COLOR_BASE16="$OS_COLOR_BASE16";;
-esac
-
-# --- Outputing ---
+# --- Adding Prologue ---
 cat > "$CONFIG" << EOF
-#!/usr/bin/env sh
+#!/bin/sh
 # Configuration file for LolPopGames' ${CONFIG_NAME}dotfiles
 
-# System Stats
-OS_ICON='$OS_ICON'
-OS_NAME='$OS_NAME'${LINUX_FAMILY_BRANCH:+"
-LINUX_FAMILY_BRANCH='$LINUX_FAMILY_BRANCH'"}
-OS_COLOR_RGB=$OS_COLOR_RGB
-OS_COLOR_XTERM=$OS_COLOR_XTERM
-OS_COLOR_BASE16=$OS_COLOR_BASE16
+EOF
+
+# --- Adding Deps Functions ---
+# Usage:
+#   add_dep DEP...
+# Description
+#   Add required dependencies to $deps
+add_dep() {
+    _add_dep__start=1
+    while [ $# -gt 0 ]; do
+        [ $_add_dep__start -eq 0 ] && shift || _add_dep__start=0
+
+        # Exiting if already exists in $deps
+        case " $deps " in (*" $1 "*) continue;; esac
+
+        # Revoming from $optdeps and adding to $deps, if found
+        case " $optdeps " in (*" $1 "*)
+            # Adding to $deps
+            deps="$deps $1"
+
+            # Removing from optional dependencies
+            optdeps=" $optdeps "
+            _add_dep__prefix="${optdeps%%" $1 "*}"
+            _add_dep__suffix="${optdeps#*" $1 "}"
+            _add_dep__prefix="${_add_dep__prefix# }" _add_dep__suffix="${_add_dep__suffix% }"
+            optdeps="${_add_dep__prefix:+"$_add_dep__prefix "}${_add_dep__suffix}"
+
+            # Changing color in $dep_output
+            case "$dep_output" in (*"${YELLOW}$1${RESET}"*) # Skipping if dep is already green
+                _add_dep__prefix="${dep_output%%"${YELLOW}$1${RESET}"*}"
+                _add_dep__suffix="${dep_output#*"${YELLOW}$1${RESET}"}"
+                dep_output="${_add_dep__prefix}${RED}$1${RESET}${_add_dep__suffix}";;
+            esac
+
+            continue;;
+        esac
+
+
+        # If non of above, just adding to $deps
+        deps="$deps $1"
+        if dep_present "$1"; then
+            dep_output="$dep_output ${GREEN}$1${RESET}"
+        else
+            dep_output="$dep_output ${RED}$1${RESET}"
+        fi
+    done
+}
+
+# Usage:
+#   add_optdep DEP...
+# Description:
+#   Add optional dependencies to $optdeps
+add_optdep() {
+    _add_dep__start=1
+    while [ $# -gt 0 ]; do
+        [ $_add_dep__start -eq 0 ] && shift || _add_dep__start=0
+
+        # Exiting if already exists in $deps or $optdeps
+        case " $deps $optdeps " in (*" $1 "*) continue;; esac
+
+        # Adding to $optdeps
+        optdeps="$optdeps $1"
+        if dep_present "$1"; then
+            dep_output="$dep_output ${GREEN}$1${RESET}"
+        else
+            dep_output="$dep_output ${YELLOW}$1${RESET}"
+        fi
+    done
+}
+
+# --- Ask Functions ---
+# Usage:
+#   ask_yesno "question" ([Yy]/[Nn])
+# Description:
+#   Ask something with default answer Yes or No
+ask_yesno() {
+    case "$2" in
+        [Yy])
+            while true; do
+                printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%b? [${BOLD}Y${RESET}/n] " "$1"
+                read _ask_yesno__responce
+                case "$_ask_yesno__responce" in
+                    [Yy]|'') return;;
+                    [Nn]) return 1;;
+                esac
+            done;;
+        [Nn])
+            while true; do
+                printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}%b? [y/${BOLD}N${RESET}] " "$1"
+                read _ask_yesno__responce
+                case "$_ask_yesno__responce" in
+                    [Yy]) return;;
+                    [Nn]|'') return 1;;
+                esac
+            done;;
+    esac
+}
+
+# Usage:
+#   ask_choice "question" CHOICE...
+# Description:
+#   Ask something with several choices.
+#   The first choice is the default choice.
+ask_choice() {
+    _ask_choice__question="$1"
+    _ask_choice__first="$2"
+    shift 2
+
+    while true; do
+        IFS='/' printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%s? (${BOLD}%b${RESET}/%b) " "$_ask_choice__question" "$_ask_choice__first" "$*"
+        read _ask_choice__responce
+        case "$_ask_choice__responce" in (*" $_ask_choice__first $* "*) printf '%s' "$_ask_choice__responce"; return;; esac
+    done
+}
+
+# Usage:
+#   ask_for_config CONFIG
+# Description:
+#   Ask to install a config
+ask_for_config() {
+    _ask_for_config__continue=
+    while [ $# -gt 0 ]; do
+        if [ -n "$_ask_for_config__continue" ]; then
+            shift
+            _ask_for_config__continue=
+        fi
+        [ $# -eq 0 ] && break
+        case "$1" in (*" $confs "*) continue;; esac
+        
+        if dep_present "$1"; then
+            if ! ask_yesno "Install config for ${LIGHT_GREEN}$1${RESET}" y; then
+                _ask_for_config__continue=1
+                continue
+            fi
+        else
+            if ! ask_yesno "Install config for ${LIGHT_RED}$1${RESET}" n; then
+                _ask_for_config__continue=1
+                continue
+            fi
+        fi
+
+        confs="$confs $1"
+        "$DIR/configs/$1/setup.sh" -i
+        {
+            read -r _ask_for_config__deps
+            add_dep $_ask_for_config__deps
+            read -r _ask_for_config__optdeps
+            add_optdep $_ask_for_config__optdeps
+        } << EOF
+$("$DIR/configs/$1/install-deps.sh" -p)
+
 
 EOF
+        shift
+    done
+}
 
 # --- Output Deps Function ---
 # Usage:
@@ -89,14 +221,14 @@ output_deps() {
     dep_output="${dep_output# }"
 
 cat >> "$CONFIG" << EOF
-# Configuration
+# Configs & Dependencies
 CONFS='$confs'
 DEPS='$deps'
 OPTDEPS='$optdeps'
 EOF
 
     # Printing dependencies
-    printf 'Dependencies: %s\n' "$dep_output"
+    [ -z "$INDENT" ] && printf 'Dependencies: %s\n' "$dep_output" || :
 }
 
 fi

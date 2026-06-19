@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # Marks Framework
 if [ -z "$_parse_marks__included" ]; then
 _parse_marks__included=1

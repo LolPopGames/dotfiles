@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # Preloaded Module
 if [ -z "$_preloaded_sh__included" ]; then
 _preloaded_sh__included=1
@@ -15,6 +15,7 @@ if [ -d "$DIR/modules" ]; then
 else
     MODULES="$DIR/../../modules"
 fi
+CACHE="$MODULES/cache"
 
 # Adding CONFIG_NAME for ./script.sh --help (LolPopGames' ${CONFIG_NAME}dotfiles)
 if [ ! -d "$DIR/.git" ]; then
@@ -62,6 +63,7 @@ EOF
 . "$MODULES/colors.sh"
 . "$MODULES/args.sh"
 . "$MODULES/deps.sh"
+. "$MODULES/os-info.sh"
 case "$(basename "$0")" in
     setup.sh)        . "$MODULES/preloaded/setup.sh";;
     install-deps.sh) . "$MODULES/preloaded/install-deps.sh";;
