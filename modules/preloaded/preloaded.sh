@@ -64,6 +64,8 @@ EOF
 . "$MODULES/args.sh"
 . "$MODULES/deps.sh"
 . "$MODULES/os-info.sh"
+. "$MODULES/escaping.sh"
+. "$MODULES/marks.sh"
 case "$(basename "$0")" in
     setup.sh)        . "$MODULES/preloaded/setup.sh";;
     install-deps.sh) . "$MODULES/preloaded/install-deps.sh";;

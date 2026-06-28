@@ -1,55 +1,28 @@
 #!/usr/bin/env sh
-
 . "$(dirname "$(readlink -m "$0")")/../../modules/preloaded/preloaded.sh"
 
-# --- Getting Infomation
-while true; do
-    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Where will be ${LIGHT_GREEN}output dir${RESET}? (${BOLD}inconfig${RESET}/home) "
-    read responce
-    case "$responce" in
-        ''|inconfig) OUTPUT_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh";;
-        home)        OUTPUT_DIR="$HOME";;
-        *) continue;;
-    esac
-    break
-done
+add_dep zsh
 
-while true; do
-    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Add sudo shortcut for ${LIGHT_GREEN}ctrl+enter${RESET} (preconfigured kitty is needed)? (Y/n) "
-    read responce
-    case "$responce" in
-        ''|[Yy]) ADD_SUDO_SHORTCUT=1;;
-        [Nn])    ADD_SUDO_SHORTCUT=0;;
-        *) continue;;
-    esac
-    break
-done
+# --- Getting Information ---
+if ask_yesno "Add sudo shortcut for ${LIGHT_GREEN}ctrl+enter${RESET} (preconfigured kitty is needed)" y; then
+    ADD_SUDO_SHORTCUT=1
+else
+    ADD_SUDO_SHORTCUT=0
+fi
 
-while true; do
-    printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}theme${RESET} to use? (${BOLD}colorful${RESET}/bash/minimal) "
-    read responce
-    case "$responce" in
-        ''|colorful) PROMPT_STYLE='colorful';;
-        bash)        PROMPT_STYLE='bash';;
-        minimal)     PROMPT_STYLE='minimal';;
-        *) continue;;
-    esac
-    break
-done
+case "$(ask_choice "Which ${LIGHT_GREEN}theme${RESET} to use" colorful bash minimal)" in
+    colorful) PROMPT_STYLE='colorful';;
+    bash)     PROMPT_STYLE='bash';;
+    minimal)  PROMPT_STYLE='minimal';;
+esac
 
 if [ "$PROMPT_STYLE" != 'bash' ]; then
     PROMPT_SIGN='bash'
 else
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which type of ${LIGHT_GREEN}prompt sign${RESET} ($/#) to use? (${BOLD}bash${RESET}/zsh) "
-        read responce
-        case "$responce" in
-            ''|bash) PROMPT_SIGN='bash';;
-            zsh)     PROMPT_SIGN='zsh';;
-            *) continue;;
-        esac
-        break
-    done
+    case "$(ask_choice "Which type of ${LIGHT_GREEN}prompt sign${RESET} ($/#) to use" bash zsh)" in
+        bash) PROMPT_SIGN='bash';;
+        zsh)  PROMPT_SIGN='zsh';;
+    esac
 fi
 
 if [ "$PROMPT_STYLE" != 'colorful' ]; then
@@ -66,56 +39,47 @@ if [ "$PROMPT_STYLE" != 'colorful' ]; then
     ENABLE_GIT=1
     SHOW_EXEC_TIME=1
 else
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}char set${RESET} to use? (${BOLD}nerdfonts${RESET}/utf-8/ascii) "
-        read responce
-        case "$responce" in
-            ''|nerdfonts) CHAR_SET='nerdfonts';;
-            utf-8)        CHAR_SET='utf-8';;
-            ascii)        CHAR_SET='ascii';;
-            *) continue;;
-        esac
-        break
-    done
+    case "$(ask_choice "Which ${LIGHT_GREEN}char set${RESET} to use" nerdfonts utf-8 ascii)" in
+        nerdfonts) CHAR_SET='nerdfonts';;
+        utf-8)     CHAR_SET='utf-8';;
+        ascii)     CHAR_SET='ascii';;
+    esac
 
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Which ${LIGHT_GREEN}color set${RESET} to use? (${BOLD}truecolor${RESET}/xterm256/base16) "
-        read responce
-        case "$responce" in
-            ''|truecolor) COLOR_SET='truecolor';;
-            xterm256)     COLOR_SET='xterm256';;
-            base16)       COLOR_SET='base16';;
-            *) continue;;
+    if [ "$CHAR_SET" = 'ascii' ]; then
+        case "$(ask_choice "Which ${LIGHT_GREEN}color set${RESET} to use" base16 xterm256 truecolor)" in
+            base16)    COLOR_SET='base16';;
+            xterm256)  COLOR_SET='xterm256';;
+            truecolor) COLOR_SET='truecolor';;
         esac
-        break
-    done
+    else
+        case "$(ask_choice "Which ${LIGHT_GREEN}color set${RESET} to use" truecolor xterm256 base16)" in
+            truecolor) COLOR_SET='truecolor';;
+            xterm256)  COLOR_SET='xterm256';;
+            base16)    COLOR_SET='base16';;
+        esac
+    fi
 
     case "$OS_NAME" in
         android-*)
-            while true; do
-                printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Show Android's ${LIGHT_GREEN}battery level${RESET}? (Y/n) "
-                read responce
-                case "$responce" in
-                    ''|[Yy]) SHOW_BATTERY_LEVEL=1;;
-                    [Nn])    SHOW_BATTERY_LEVEL=0;;
-                    *) continue;;
-                esac
-                break
-            done;;
+            if ask_yesno "Show Android's ${LIGHT_GREEN}battery level${RESET}" y; then
+                SHOW_BATTERY_LEVEL=1
+            else
+                SHOW_BATTERY_LEVEL=0
+            fi;;
         *)
-            while true; do
-                printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}Show Android's ${LIGHT_RED}battery level${RESET}? (y/N) "
-                read responce
-                case "$responce" in
-                    [Yy])    SHOW_BATTERY_LEVEL=1;;
-                    ''|[Nn]) SHOW_BATTERY_LEVEL=0;;
-                    *) continue;;
-                esac
-                break
-            done;;
+            if ask_yesno "Show Android's ${LIGHT_RED}battery level${RESET}" n; then
+                SHOW_BATTERY_LEVEL=1
+            else
+                SHOW_BATTERY_LEVEL=0
+            fi;;
     esac
 
-    if [ "$SHOW_BATTERY_LEVEL" -eq 1 ]; then
+    if [ "$SHOW_BATTERY_LEVEL" -eq 0 ]; then
+        BATTERY_LEVEL_GREEN=60
+        BATTERY_LEVEL_YELLOW=20
+    else
+        add_optdep jq
+
         while true; do
             printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}What will be minimal ${LIGHT_GREEN}green${RESET} battery level (from X up to 100%%)? (${BOLD}60%%${RESET}) "
             read responce
@@ -152,58 +116,50 @@ else
                 break
             fi
         done
-    else
-        BATTERY_LEVEL_GREEN=60
-        BATTERY_LEVEL_YELLOW=20
     fi
 
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Make ${LIGHT_GREEN}newline${RESET} if needed? (Y/n) "
-        read responce
-        case "$responce" in
-            ''|[Yy]) MAKE_NEWLINE_IF_NEEDED=1;;
-            [Nn])    MAKE_NEWLINE_IF_NEEDED=0;;
-            *) continue;;
-        esac
-        break
-    done
+    if [ "$CHAR_SET" = 'ascii' ]; then
+        if ask_yesno "Make ${LIGHT_RED}newline${RESET} if needed" n; then
+            MAKE_NEWLINE_IF_NEEDED=1
+        else
+            MAKE_NEWLINE_IF_NEEDED=0
+        fi
+    else
+        if ask_yesno "Make ${LIGHT_GREEN}newline${RESET} if needed" y; then
+            MAKE_NEWLINE_IF_NEEDED=1
+        else
+            MAKE_NEWLINE_IF_NEEDED=0
+        fi
+    fi
 
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Manage ${LIGHT_GREEN}dir icon${RESET}? (Y/n) "
-        read responce
-        case "$responce" in
-            ''|[Yy]) MANAGE_DIR_ICON=1;;
-            [Nn])    MANAGE_DIR_ICON=0;;
-            *) continue;;
-        esac
-        break
-    done
+    if [ "$CHAR_SET" = 'ascii' ]; then
+        if ask_yesno "Manage ${LIGHT_RED}dir icon${RESET}" n; then
+            MANAGE_DIR_ICON=1
+        else
+            MANAGE_DIR_ICON=0
+        fi
+    else
+        if ask_yesno "Manage ${LIGHT_GREEN}dir icon${RESET}" y; then
+            MANAGE_DIR_ICON=1
+        else
+            MANAGE_DIR_ICON=0
+        fi
+    fi
 
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Enable ${LIGHT_GREEN}git${RESET} integration? (Y/n) "
-        read responce
-        case "$responce" in
-            ''|[Yy]) ENABLE_GIT=1;;
-            [Nn])    ENABLE_GIT=0;;
-            *) continue;;
-        esac
-        break
-    done
+    if ask_yesno "Enable ${LIGHT_GREEN}git${RESET} integration" y; then
+        ENABLE_GIT=1
+    else
+        ENABLE_GIT=0
+    fi
 
-    while true; do
-        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}Show commands' ${LIGHT_GREEN}execution time${RESET}? (Y/n) "
-        read responce
-        case "$responce" in
-            ''|[Yy]) SHOW_EXEC_TIME=1;;
-            [Nn])    SHOW_EXEC_TIME=0;;
-            *) continue;;
-        esac
-        break
-    done
+    if ask_yesno "Show commands' ${LIGHT_GREEN}execution time${RESET}" y; then
+        SHOW_EXEC_TIME=1
+    else
+        SHOW_EXEC_TIME=0
+    fi
 fi
 
 # --- Outputing ---
-. "$MODULES/escaping.sh"
 cat >> "$CONFIG" << EOF
 # Add shortcut, that will add 'sudo' to any command runned with
 # ctrl+enter instead of just enter (preconfigurated kitty is needed)
@@ -250,4 +206,7 @@ elif [ "\$PROMPT_STYLE" = 'colorful' ]; then
     # Shows command execution time
     SHOW_EXEC_TIME=$SHOW_EXEC_TIME
 fi
+
 EOF
+
+output_deps

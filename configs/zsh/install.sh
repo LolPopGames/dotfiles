@@ -93,6 +93,34 @@ mark_colorful_user_char() {
     esac
 }
 
+mark_colorful_android() {
+    case "$OS_NAME" in (android-*)
+        printf '%F{'
+        case "$COLOR_SET" in
+            truecolor) printf "$ANDROID_BRAND_COLOR_RGB";;
+            xterm256) printf "$ANDROID_BRAND_COLOR_XTERM";;
+            base16) printf "$ANDROID_BRAND_COLOR_BASE16";;
+        esac
+        printf '}%f['
+        
+        case "$CHAR_SET" in
+            nerdfonts)
+                case "$ANDROID_BRAND" in
+                    google) printf '';;
+                    *)      printf '';;
+                esac;;
+            utf-8) printf '📱';;
+            ascii) printf '#';;
+        esac
+
+        printf "] $(/system/bin/getprop ro.product.device) ";;
+    esac
+}
+
+# mark_colorful_precmd_battery_status() {
+#
+# }
+
 mark_colorful_dir_icon() {
     case "$CHAR_SET" in
         nerdfonts)
@@ -114,7 +142,14 @@ mark_colorful_dir_icon() {
 mark_colorful_git() {
     if [ "$ENABLE_GIT" -eq 1 ]; then
         printf ' $git_text'
-    fi }
+    fi
+}
+
+# mark_colorful_battery_status() {
+#     case "$SHOW_BATTERY_STATUS $OS_NAME" in
+#         '1 android-'*) printf '${battery_status_text}';;
+#     esac
+# }
 
 mark_colorful_exitcode_char() {
     case "$CHAR_SET" in
@@ -336,19 +371,15 @@ mark_colorful_git_char() {
 
 SRC="$DIR/src"
 OUTPUT="$CONFHOME/zsh/.zshrc"
-. "$MODULES/marks.sh"
 parse_marks "$SRC/main.zsh" > "$OUTPUT"
 
-if [ "$OUTPUT" != "$HOME/.zshrc" ]; then
 cat > "$HOME/.zshrc" << EOF
 ZDOTDIR="\${XDG_CONFIG_HOME:-"$HOME/.config"}/zsh" zsh --login
 EOF
-fi
 
 if [ -n "$ZSH_VERSION" ]; then
     zcompile "$OUTPUT"
-    [ "$OUTPUT" != "$HOME/.zshrc" ] && zcompile "$HOME/.zshrc"
+    zcompile "$HOME/.zshrc"
 elif command -v zsh >/dev/null 2>&1; then
-    zsh -c -- "zcompile \"$(shell_escape_quote "$OUTPUT")\""
-    [ "$OUTPUT" != "$HOME/.zshrc" ] && zsh -c -- "zcompile \"$(shell_escape_quote "$HOME/.zshrc")\""
+    zsh -c -- "zcompile \"$(shell_escape_quote "$OUTPUT")\"; zcompile \"$(shell_escape_quote "$HOME/.zshrc")\""
 fi

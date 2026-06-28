@@ -130,7 +130,7 @@ ask_yesno() {
     case "$2" in
         [Yy])
             while true; do
-                printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%b? [${BOLD}Y${RESET}/n] " "$1"
+                printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%b? [${BOLD}Y${RESET}/n] " "$1" >&2
                 read _ask_yesno__responce
                 case "$_ask_yesno__responce" in
                     [Yy]|'') return;;
@@ -139,7 +139,7 @@ ask_yesno() {
             done;;
         [Nn])
             while true; do
-                printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}%b? [y/${BOLD}N${RESET}] " "$1"
+                printf "${INDENT:+"${LIGHT_RED}=>${RESET} "}%b? [y/${BOLD}N${RESET}] " "$1" >&2
                 read _ask_yesno__responce
                 case "$_ask_yesno__responce" in
                     [Yy]) return;;
@@ -154,17 +154,24 @@ ask_yesno() {
 # Description:
 #   Ask something with several choices.
 #   The first choice is the default choice.
-ask_choice() {
+ask_choice() (
     _ask_choice__question="$1"
     _ask_choice__first="$2"
     shift 2
+    IFS='/'
 
     while true; do
-        IFS='/' printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%s? (${BOLD}%b${RESET}/%b) " "$_ask_choice__question" "$_ask_choice__first" "$*"
+        printf "${INDENT:+"${LIGHT_GREEN}=>${RESET} "}%b? (${BOLD}%b${RESET}/%b) " "$_ask_choice__question" "$_ask_choice__first" "$*" >&2
         read _ask_choice__responce
-        case "$_ask_choice__responce" in (*" $_ask_choice__first $* "*) printf '%s' "$_ask_choice__responce"; return;; esac
+        _ask_choice__responce="$(
+            printf '%s' "$_ask_choice__responce" |
+            sed 's/^[[:space:]]*//g' |
+            sed 's/[[:space:]]*$//g' |
+            sed 's/[[:space:]]/-/g'
+        )"
+        case "$_ask_choice__responce" in (''|*" $_ask_choice__first $* "*) printf '%s' "${_ask_choice__responce:-"$_ask_choice__first"}"; return;; esac
     done
-}
+)
 
 # Usage:
 #   ask_for_config CONFIG
@@ -208,6 +215,21 @@ EOF
     done
 }
 
+# --- Auto Install Function ---
+# Usage:
+#   auto_install
+# Description:
+#   Run install-deps.sh and install.sh
+auto_install() {
+    printf '\n'
+    if ask_yesno "${LIGHT_GREEN}Install${RESET} ${CONFIG_NAME}dependencies and configurations right now" y; then
+        printf '==> Installing dependencies...\n'
+        "$DIR/install-deps.sh"
+        printf '==> Installing configurations...\n'
+        "$DIR/install.sh"
+    fi
+}
+
 # --- Output Deps Function ---
 # Usage:
 #   output_deps
@@ -221,14 +243,17 @@ output_deps() {
     dep_output="${dep_output# }"
 
 cat >> "$CONFIG" << EOF
-# Configs & Dependencies
-CONFS='$confs'
+# ${confs:+"Configs & "}Dependencies${confs:+"
+CONFS='$confs'"}
 DEPS='$deps'
 OPTDEPS='$optdeps'
 EOF
 
     # Printing dependencies
-    [ -z "$INDENT" ] && printf 'Dependencies: %s\n' "$dep_output" || :
+    if [ -z "$INDENT" ]; then
+        printf 'Dependencies: %s\n' "$dep_output" 
+        auto_install
+    fi
 }
 
 fi

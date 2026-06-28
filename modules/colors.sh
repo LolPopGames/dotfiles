@@ -51,30 +51,29 @@ BG_LIGHT_WHITE="$ESC[107m"
 
 # --- RGB to xterm256 Function ---
 # Usage:
-#   rgb_to_xterm256 R G B
+#    rgb_to_xterm256 R G B
 # Description:
-#   Converts RGB value to a value from xterm256 color pallete
+#    Converts RGB value to a value from xterm256 color pallete
 #
-#   R, G, B must be decimal numbers
+#    R, G, B must be decimal numbers
 rgb_to_xterm256() (
     r="$1" g="$2" b="$3"
 
     # --- Base16 ---
-    # Indexes:
-    #   0=black, 1=red, 2=green, 3=yellow, 4=blue, 5=magenta, 6=cyan, 7=white,
-    #   8=light-black, 9=light-red, 10=light-green, 11=light-yellow, 12=light-blue, 13=light-magenta, 14=light-cyan, 15=light-white
-    #      0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15
-    sys_r="46  204 78  227 32  117 6   211 85  239 128 252 114 173 52  238"
-    sys_g="52  0   154 186 100 80  152 215 87  41  226 233 159 127 226 238"
-    sys_b="54  0   6   9   164 123 154 207 83  41  52  79  207 168 226 236"
+    sys_r="46 204 78 227 32 117 6 211 85 239 128 252 114 173 52 238"
+    sys_g="52 0 154 186 100 80 152 215 87 41 226 233 159 127 226 238"
+    sys_b="54 0 6 9 164 123 154 207 83 41 52 79 207 168 226 236"
 
     min_dist=999999
     best=0
     i=0
-    for token in $sys_r; do
-        sr=$token
-        sg=$(echo "$sys_g" | cut -d' ' -f$((i+1)))
-        sb=$(echo "$sys_b" | cut -d' ' -f$((i+1)))
+
+    rest_r="$sys_r" rest_g="$sys_g" rest_b="$sys_b"
+    while [ $i -lt 16 ]; do
+        sr="${rest_r%% *}" rest_r="${rest_r#* }"
+        sg="${rest_g%% *}" rest_g="${rest_g#* }"
+        sb="${rest_b%% *}" rest_b="${rest_b#* }"
+
         dr=$((r - sr))
         dg=$((g - sg))
         db=$((b - sb))
@@ -87,8 +86,6 @@ rgb_to_xterm256() (
     done
 
     # --- Color Cube 6x6x6 (indexes 16-231) ---
-    # Levels: 0, 95, 135, 175, 215, 255
-    # Index = 16 + 386*ri + 6*gi + bi
     ri=0
     while [ $ri -lt 6 ]; do
         gi=0
@@ -144,32 +141,34 @@ rgb_to_xterm256() (
 
 # --- xterm256 to RGB Function ---
 # Usage:
-#   xterm256_to_base16 XTERM-COLOR
+#    xterm256_to_rgb XTERM-COLOR
 # Description:
-#   Converts XTERM-COLOR to rgb color
+#    Converts XTERM-COLOR to rgb color
 # Output Format:
-#   R G B
-#   R, G, B are decimal numbers
+#    R G B
+#    R, G, B are decimal numbers
 xterm256_to_rgb() (
     xterm_color="$1"
     # --- Base16 ---
     if [ "$xterm_color" -lt 16 ]; then
-        # Indexes:
-        #   0=black, 1=red, 2=green, 3=yellow, 4=blue, 5=magenta, 6=cyan, 7=white,
-        #   8=light-black, 9=light-red, 10=light-green, 11=light-yellow, 12=light-blue, 13=light-magenta, 14=light-cyan, 15=light-white
-        #      0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15
-        sys_r="46  204 78  227 32  117 6   211 85  239 128 252 114 173 52  238"
-        sys_g="52  0   154 186 100 80  152 215 87  41  226 233 159 127 226 238"
-        sys_b="54  0   6   9   164 123 154 207 83  41  52  79  207 168 226 236"
-        i=$((idx+1))
-        r=$(printf "$sys_r" | cut -d' ' -f$i)
-        g=$(printf "$sys_g" | cut -d' ' -f$i)
-        b=$(printf "$sys_b" | cut -d' ' -f$i)
+        sys_r="46 204 78 227 32 117 6 211 85 239 128 252 114 173 52 238"
+        sys_g="52 0 154 186 100 80 152 215 87 41 226 233 159 127 226 238"
+        sys_b="54 0 6 9 164 123 154 207 83 41 52 79 207 168 226 236"
+        
+        i=0
+        rest_r="$sys_r" rest_g="$sys_g" rest_b="$sys_b"
+        while [ $i -lt "$xterm_color" ]; do
+            rest_r="${rest_r#* }"
+            rest_g="${rest_g#* }"
+            rest_b="${rest_b#* }"
+            i=$((i+1))
+        done
+        r="${rest_r%% *}"
+        g="${rest_g%% *}"
+        b="${rest_b%% *}"
 
     # --- Color Cube 6x6x6 (indexes 16-231) ---
     elif [ $xterm_color -lt 232 ]; then
-        # Levels: 0, 95, 135, 175, 215, 255
-        # Index = 16 + 386*ri + 6*gi + bi
         tmp=$((xterm_color - 16))
         ri=$((tmp / 36))
         gi=$(((tmp % 36) / 6))
@@ -189,19 +188,19 @@ xterm256_to_rgb() (
 
     # --- Gray Scale (indexes 232-255) ---
     else
-        level=$(( (idx - 232) * 10 + 8 ))
+        level=$(( (xterm_color - 232) * 10 + 8 ))
         r=$level; g=$level; b=$level
     fi
-    printf "$r $g $b"
+    printf "%s %s %s" "$r" "$g" "$b"
 )
 
 # --- RGB to Base16 Function ---
 # Usage:
-#   rgb_to_xterm256 R G B
+#    rgb_to_base16 R G B
 # Description:
-#   Converts RGB value to a value from xterm256 color pallete
+#    Converts RGB value to a value from base16 color pallete
 #
-#   R, G, B must be decimal numbers
+#    R, G, B must be decimal numbers
 rgb_to_base16() (
     r="$1" g="$2" b="$3"
 
@@ -247,9 +246,9 @@ rgb_to_base16() (
 
 # --- xterm256 to Base16 Function ---
 # Usage:
-#   xterm256_to_base16 XTERM-COLOR
+#    xterm256_to_base16 XTERM-COLOR
 # Description:
-#   Converts XTERM-COLOR to base16 color
+#    Converts XTERM-COLOR to base16 color
 xterm256_to_base16() (
     xterm_color="$1"
 

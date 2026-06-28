@@ -1,2 +1,2 @@
-#~~set_prefix colorful~~#PROMPT='#~~newline~~##~~system~~# [#~~user_char~~#] %n %F{blue}[#~~dir_icon~~#] %~#~~git~~#
+#~~set_prefix colorful~~#PROMPT='#~~newline~~##~~system~~# [#~~user_char~~#] %n #~~android~~#%F{blue}[#~~dir_icon~~#] %~#~~git~~##~~battery_level~~#
 %(?.%F{green}.%F{red})%(#.=>.->)%f ' RPROMPT='%(?.%F{green}.%F{red})%?#~~exitcode_char~~# #~~exec_time~~#%(1j.%F{cyan}%(2j.%j.)[#~~job_char~~#] .)%f%*' PROMPT2='%F{11}%_ %F{yellow}%(#.<==.<--)%f ' PROMPT3='%F{12}%(#.=>.->)?%f ' PROMPT4='#~~PROMPT4~~#' SPROMPT=$'zsh: Did you mean %F{10}%r%f? %F{12}[ynae]%f: '#~~preexec~~##~~precmd~~##~~set_prefix~~#
